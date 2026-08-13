@@ -1,10 +1,26 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const TIER_FEES: Record<string, { fee: number; limit: number }> = {
-  standard: { fee: 2000, limit: 5000 },
-  gold: { fee: 5000, limit: 15000 },
-  platinum: { fee: 10000, limit: 50000 },
+  standard: {
+    fee: 2000,
+    limit: 5000,
+  },
+  gold: {
+    fee: 5000,
+    limit: 15000,
+  },
+  platinum: {
+    fee: 10000,
+    limit: 50000,
+  },
 };
+
+export function reference(prefix = "REF"): string {
+  return `${prefix}-${Date.now()}-${Math.random()
+    .toString(36)
+    .substring(2, 8)
+    .toUpperCase()}`;
+}
 
 export async function createDepositRequest(params: {
   userId: string;
@@ -12,6 +28,7 @@ export async function createDepositRequest(params: {
   amount: number;
 }) {
   const { userId, accountId, amount } = params;
+
   const { error } = await supabase.from("transactions").insert({
     user_id: userId,
     account_id: accountId,
@@ -20,9 +37,12 @@ export async function createDepositRequest(params: {
     amount,
     status: "pending",
     description: "Simulated deposit",
-    reference: `DEP-${Date.now()}`,
+    reference: reference("DEP"),
   });
-  if (error) throw error;
+
+  if (error) {
+    throw error;
+  }
 }
 
 export function adminSessionConfig() {
