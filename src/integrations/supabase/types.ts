@@ -14,7 +14,345 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      accounts: {
+        Row: {
+          account_number: string
+          balance: number
+          created_at: string
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          account_number: string
+          balance?: number
+          created_at?: string
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          account_number?: string
+          balance?: number
+          created_at?: string
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_actions: {
+        Row: {
+          action: string
+          admin_email: string
+          created_at: string
+          details: Json
+          id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_email: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_email?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
+      card_secrets: {
+        Row: {
+          card_id: string
+          created_at: string
+          pin: string
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          pin: string
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          pin?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_secrets_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: true
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cards: {
+        Row: {
+          account_id: string | null
+          card_type: string
+          created_at: string
+          daily_limit: number
+          expiry: string
+          fee_paid: number
+          holder_name: string
+          id: string
+          masked_number: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          card_type?: string
+          created_at?: string
+          daily_limit?: number
+          expiry: string
+          fee_paid?: number
+          holder_name: string
+          id?: string
+          masked_number: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          card_type?: string
+          created_at?: string
+          daily_limit?: number
+          expiry?: string
+          fee_paid?: number
+          holder_name?: string
+          id?: string
+          masked_number?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cards_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read_at?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          currency: string
+          date_of_birth: string | null
+          email: string
+          full_name: string
+          id: string
+          notify_email: boolean
+          notify_push: boolean
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          currency?: string
+          date_of_birth?: string | null
+          email?: string
+          full_name?: string
+          id: string
+          notify_email?: boolean
+          notify_push?: boolean
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          currency?: string
+          date_of_birth?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          notify_email?: boolean
+          notify_push?: boolean
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      recipients: {
+        Row: {
+          account_number: string
+          bank: string
+          created_at: string
+          id: string
+          name: string
+          routing_number: string | null
+          user_id: string
+        }
+        Insert: {
+          account_number: string
+          bank: string
+          created_at?: string
+          id?: string
+          name: string
+          routing_number?: string | null
+          user_id: string
+        }
+        Update: {
+          account_number?: string
+          bank?: string
+          created_at?: string
+          id?: string
+          name?: string
+          routing_number?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          admin_reply: string | null
+          category: string
+          created_at: string
+          id: string
+          message: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_reply?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_reply?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          message?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          direction: string
+          id: string
+          recipient_account: string | null
+          recipient_bank: string | null
+          recipient_name: string | null
+          reference: string
+          routing_number: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          direction: string
+          id?: string
+          recipient_account?: string | null
+          recipient_bank?: string | null
+          recipient_name?: string | null
+          reference: string
+          routing_number?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          direction?: string
+          id?: string
+          recipient_account?: string | null
+          recipient_bank?: string | null
+          recipient_name?: string | null
+          reference?: string
+          routing_number?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
