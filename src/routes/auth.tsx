@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Wellspring Bank" },
-      { name: "description", content: "Sign in or create an account on the Wellspring Bank simulated banking demo." },
-      { property: "og:title", content: "Sign in — Wellspring Bank" },
-      { property: "og:description", content: "Access your simulated Wellspring Bank accounts." },
+      { title: "Sign in — wellsfargo Bank" },
+{ name: "description", content: "Sign in or create an account on the wellsfargo Bank." },
+      { property: "og:title", content: "Sign in — wellsfargo Bank" },
+      { property: "og:description", content: "Access your  wellsfargo Bank accounts." },
     ],
   }),
   component: AuthPage,
@@ -30,6 +31,7 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -44,7 +46,7 @@ function AuthPage() {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        if (!remember) sessionStorage.setItem("wellspring:ephemeral", "1");
+        if (!remember) sessionStorage.setItem("wellsfargo:ephemeral", "1");
         navigate({ to: "/dashboard", replace: true });
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
@@ -80,17 +82,16 @@ function AuthPage() {
           <span className="grid size-11 place-items-center rounded-xl bg-gold font-display text-lg font-extrabold text-accent-foreground">
             W
           </span>
-          <span className="font-display text-xl font-bold">Wellspring Bank</span>
+          <span className="font-display text-xl font-bold">wellsfargo Bank</span>
         </Link>
         <div className="max-w-sm">
-          <h2 className="font-display text-4xl font-extrabold leading-tight">Banking, simulated end to end.</h2>
+          <h2 className="font-display text-4xl font-extrabold leading-tight">Banking made simple. Secure. Built around you.</h2>
           <p className="mt-4 text-sm text-primary-foreground/80">
-            Accounts, transfers, virtual cards, receipts and support tickets — all backed by real server-side rules,
-            none of it backed by real money.
+            View your balances, manage your accounts, transfer funds, pay bills, and securely access your banking services from anywhere.
           </p>
         </div>
         <p className="text-xs text-primary-foreground/60">
-          Fictional demonstration product. Not a real financial institution.
+       .
         </p>
       </div>
 
@@ -107,7 +108,7 @@ function AuthPage() {
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {mode === "signin"
-                ? "Sign in to your simulated accounts."
+                ? "Sign in to your account securely."
                 : mode === "signup"
                   ? "Email verification is required before access."
                   : "We'll email you a secure reset link."}
@@ -136,15 +137,26 @@ function AuthPage() {
           {mode !== "forgot" && (
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                minLength={8}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={8}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
           )}
 
@@ -171,7 +183,7 @@ function AuthPage() {
           </Button>
 
           <p className="text-center text-sm text-muted-foreground">
-            {mode === "signup" ? "Already have an account?" : "New to Wellspring?"}{" "}
+            {mode === "signup" ? "Already have an account?" : "New to wellsfargo?"}{" "}
             <button
               type="button"
               className="font-semibold text-primary"

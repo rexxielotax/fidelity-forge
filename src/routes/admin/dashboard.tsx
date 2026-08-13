@@ -25,10 +25,10 @@ import {
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({
     meta: [
-      { title: "Admin console — Wellspring Bank" },
+      { title: "Admin console — wellsfargo Bank" },
       { name: "description", content: "Manage simulated users, balances, transactions and support tickets." },
       { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Admin console — Wellspring Bank" },
+      { property: "og:title", content: "Admin console — wellsfargo Bank" },
       { property: "og:description", content: "Manage users, balances and tickets." },
     ],
   }),
@@ -83,7 +83,7 @@ function AdminDashboard() {
             </span>
             <div>
               <h1 className="font-display text-base font-bold">Admin console</h1>
-              <p className="text-xs text-muted-foreground">Wellspring Bank simulation</p>
+              <p className="text-xs text-muted-foreground">wellsfargo Bank </p>
             </div>
           </div>
           <Button

@@ -19,9 +19,9 @@ import { greeting, money } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Wellspring Bank" },
-      { name: "description", content: "Your balances, quick actions and recent activity in Wellspring Bank." },
-      { property: "og:title", content: "Dashboard — Wellspring Bank" },
+      { title: "Dashboard — wellsfargo Bank" },
+      { name: "description", content: "Your balances, quick actions and recent activity in wellsfargo Bank." },
+      { property: "og:title", content: "Dashboard — wellsfargo Bank" },
       { property: "og:description", content: "Balances, quick actions and recent activity." },
     ],
   }),
@@ -46,6 +46,38 @@ function Dashboard() {
   const currency = profile?.currency ?? "USD";
   const total = (accounts ?? []).reduce((sum, a) => sum + Number(a.balance), 0);
   const firstName = (profile?.full_name || profile?.email || "there").split(" ")[0];
+const QUICK = [
+  {
+    to: "/deposit",
+    label: "Deposit",
+    icon: Download,
+  },
+  {
+    to: "/transfer",
+    label: "Transfer",
+    icon: ArrowLeftRight,
+  },
+  {
+    to: "/cards",
+    label: "My Cards",
+    icon: CreditCard,
+  },
+  {
+    to: "/transactions",
+    label: "Transactions",
+    icon: Receipt,
+  },
+  {
+    to: "/support",
+    label: "Support",
+    icon: LifeBuoy,
+  },
+  {
+    to: "/more",
+    label: "More",
+    icon: MoreHorizontal,
+  },
+] as const;
 
   return (
     <AppShell title="Home">
@@ -70,10 +102,7 @@ function Dashboard() {
       <section className="mt-5">
         <h3 className="mb-3 text-sm font-semibold text-muted-foreground">Quick actions</h3>
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-          <div className="flex cursor-not-allowed flex-col items-center gap-2 rounded-2xl border border-dashed border-border bg-card/60 px-2 py-3.5 text-center opacity-60">
-            <Download className="size-5 text-muted-foreground" />
-            <span className="text-[11px] font-medium leading-tight text-muted-foreground">Deposit (soon)</span>
-          </div>
+          
           {QUICK.map((q) => (
             <Link
               key={q.to}

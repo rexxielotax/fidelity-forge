@@ -57,7 +57,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
           <span className="grid size-10 place-items-center rounded-xl bg-gold font-display text-lg font-extrabold text-sidebar-primary-foreground">
             W
           </span>
-          <span className="font-display text-lg font-bold">Wellspring</span>
+          <span className="font-display text-lg font-bold">wellsfargo</span>
         </Link>
         <nav className="flex flex-1 flex-col gap-1">
           {SIDE_LINKS.map((l) => {
