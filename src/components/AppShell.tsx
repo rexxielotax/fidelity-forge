@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -11,6 +12,9 @@ import {
   Receipt,
   LifeBuoy,
   Settings,
+  Download,
+  Menu,
+  X,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -29,6 +33,7 @@ const TABS = [
 const SIDE_LINKS = [
   { to: "/dashboard", label: "Overview", icon: Home },
   { to: "/accounts", label: "Accounts", icon: Wallet },
+  { to: "/deposit", label: "Deposit", icon: Download },
   { to: "/transfer", label: "Transfer", icon: ArrowLeftRight },
   { to: "/cards", label: "Cards", icon: CreditCard },
   { to: "/transactions", label: "Transactions", icon: Receipt },
@@ -43,6 +48,8 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
   const { data: notifications } = useNotifications();
   const unread = (notifications ?? []).filter((n) => !n.read_at).length;
 
+  const [navOpen, setNavOpen] = useState(false);
+
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -52,7 +59,27 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-sidebar px-4 py-6 text-sidebar-foreground lg:flex">
+      {navOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+          onClick={() => setNavOpen(false)}
+        />
+      )}
+
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-sidebar px-4 py-6 text-sidebar-foreground transition-transform duration-200 lg:translate-x-0",
+          navOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <button
+          onClick={() => setNavOpen(false)}
+          className="absolute right-3 top-6 rounded-lg p-1.5 hover:bg-sidebar-accent/60 lg:hidden"
+          aria-label="Close menu"
+        >
+          <X className="size-5" />
+        </button>
+
         <Link to="/dashboard" className="mb-8 flex items-center gap-3 px-2">
           <span className="grid size-10 place-items-center rounded-xl bg-gold font-display text-lg font-extrabold text-sidebar-primary-foreground">
             W
@@ -66,6 +93,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
               <Link
                 key={l.to}
                 to={l.to}
+                onClick={() => setNavOpen(false)}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                   active
@@ -90,7 +118,16 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
 
       <div className="lg:pl-64">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border/70 bg-background/85 px-4 py-3.5 backdrop-blur lg:px-8">
-          <h1 className="font-display text-lg font-bold">{title}</h1>
+          <div className="flex items-center">
+            <button
+              onClick={() => setNavOpen(true)}
+              className="mr-3 rounded-lg p-2 hover:bg-muted lg:hidden"
+              aria-label="Open menu"
+            >
+              <Menu className="size-5" />
+            </button>
+            <h1 className="font-display text-lg font-bold">{title}</h1>
+          </div>
           <Link to="/notifications" className="relative rounded-full p-2 hover:bg-muted" aria-label="Notifications">
             <Bell className="size-5" />
             {unread > 0 && (

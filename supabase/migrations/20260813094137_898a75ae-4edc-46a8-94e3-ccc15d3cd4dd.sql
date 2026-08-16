@@ -186,3 +186,152 @@ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$;
 
 CREATE TRIGGER profiles_touch BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
 CREATE TRIGGER tickets_touch BEFORE UPDATE ON public.support_tickets FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
+
+create table if not exists public.deposit_settings (
+  id uuid primary key default gen_random_uuid(),
+
+  method text not null,
+  field_key text not null,
+  field_label text not null,
+  field_value text not null default '',
+
+  description text not null default '',
+  notice text not null default '',
+
+  updated_at timestamptz not null default now(),
+  updated_by uuid null,
+
+  unique (method, field_key)
+);
+
+create index if not exists deposit_settings_method_idx
+on public.deposit_settings(method);
+
+alter table public.deposit_settings enable row level security;
+
+create policy "authenticated users can read deposit settings"
+on public.deposit_settings
+for select
+to authenticated
+using (true);
+
+create policy "service role manages deposit settings"
+on public.deposit_settings
+for all
+to service_role
+using (true)
+with check (true);
+
+insert into public.deposit_settings
+  (method, field_key, field_label, field_value, description, notice)
+values
+  (
+    'paypal',
+    'account_name',
+    'Account name',
+    'Nirmal Bank Demo',
+    'Use the simulated PayPal account details below.',
+    'Demo only — this PayPal account is not a real receiving account.'
+  ),
+  (
+    'paypal',
+    'account',
+    'PayPal account',
+    'demo-paypal@nirmalbank.test',
+    'Use the simulated PayPal account details below.',
+    'Demo only — this PayPal account is not a real receiving account.'
+  ),
+
+  (
+    'cashapp',
+    'account_name',
+    'Account name',
+    'Nirmal Bank Demo',
+    'Use the simulated Cash App details below.',
+    'Demo only — this Cash App identifier is not connected to a real account.'
+  ),
+  (
+    'cashapp',
+    'account',
+    'Cash App',
+    '$NirmalBankDemo',
+    'Use the simulated Cash App details below.',
+    'Demo only — this Cash App identifier is not connected to a real account.'
+  ),
+
+  (
+    'bank_transfer',
+    'bank_name',
+    'Bank name',
+    'Nirmal Bank — Demo',
+    'Use these simulated banking details when making your demo transfer.',
+    'Demo only — these banking details are placeholders and cannot receive real funds.'
+  ),
+  (
+    'bank_transfer',
+    'account_name',
+    'Account name',
+    'Nirmal Bank Demo Account',
+    'Use these simulated banking details when making your demo transfer.',
+    'Demo only — these banking details are placeholders and cannot receive real funds.'
+  ),
+  (
+    'bank_transfer',
+    'account_number',
+    'Account number',
+    '0000000000',
+    'Use these simulated banking details when making your demo transfer.',
+    'Demo only — these banking details are placeholders and cannot receive real funds.'
+  ),
+  (
+    'bank_transfer',
+    'routing_number',
+    'Routing number',
+    '000000000',
+    'Use these simulated banking details when making your demo transfer.',
+    'Demo only — these banking details are placeholders and cannot receive real funds.'
+  ),
+  (
+    'bank_transfer',
+    'swift',
+    'SWIFT / BIC',
+    'DEMONGB0XXX',
+    'Use these simulated banking details when making your demo transfer.',
+    'Demo only — these banking details are placeholders and cannot receive real funds.'
+  ),
+
+  (
+    'usdt',
+    'network',
+    'Network',
+    'TRC20',
+    'Select the network shown below.',
+    'Demo only — this is not a real blockchain address.'
+  ),
+  (
+    'usdt',
+    'address',
+    'USDT address',
+    'DEMO-USDT-TRC20-ADDRESS',
+    'Use the simulated USDT deposit address below.',
+    'Demo only — this is not a real blockchain address. Do not send real cryptocurrency to it.'
+  ),
+
+  (
+    'btc',
+    'network',
+    'Network',
+    'Bitcoin',
+    'Use the simulated Bitcoin deposit address below.',
+    'Demo only — this is not a real blockchain network.'
+  ),
+  (
+    'btc',
+    'address',
+    'BTC address',
+    'DEMO-BTC-ADDRESS',
+    'Use the simulated Bitcoin deposit address below.',
+    'Demo only — this is not a real Bitcoin address. Do not send real cryptocurrency to it.'
+  )
+
+on conflict (method, field_key) do nothing;

@@ -22,8 +22,11 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticated/support'
 import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
 import { Route as AuthenticatedTransferRouteImport } from './routes/_authenticated/transfer'
+import { Route as AdminCardRequestsRouteImport } from './routes/admin/card-requests'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as AdminDepositSettingsRouteImport } from './routes/admin/deposit-settings'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
+import { Route as AdminUsersUserIdRouteImport } from './routes/admin/users/$userId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -91,14 +94,29 @@ const AuthenticatedTransferRoute = AuthenticatedTransferRouteImport.update({
   path: '/transfer',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AdminCardRequestsRoute = AdminCardRequestsRouteImport.update({
+  id: '/admin/card-requests',
+  path: '/admin/card-requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/admin/dashboard',
   path: '/admin/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminDepositSettingsRoute = AdminDepositSettingsRouteImport.update({
+  id: '/admin/deposit-settings',
+  path: '/admin/deposit-settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
+  id: '/admin/users/$userId',
+  path: '/admin/users/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -115,8 +133,11 @@ export interface FileRoutesByFullPath {
   '/support': typeof AuthenticatedSupportRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/transfer': typeof AuthenticatedTransferRoute
+  '/admin/card-requests': typeof AdminCardRequestsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/deposit-settings': typeof AdminDepositSettingsRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -131,8 +152,11 @@ export interface FileRoutesByTo {
   '/support': typeof AuthenticatedSupportRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/transfer': typeof AuthenticatedTransferRoute
+  '/admin/card-requests': typeof AdminCardRequestsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/deposit-settings': typeof AdminDepositSettingsRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -149,8 +173,11 @@ export interface FileRoutesById {
   '/_authenticated/support': typeof AuthenticatedSupportRoute
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/_authenticated/transfer': typeof AuthenticatedTransferRoute
+  '/admin/card-requests': typeof AdminCardRequestsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/deposit-settings': typeof AdminDepositSettingsRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -167,8 +194,11 @@ export interface FileRouteTypes {
     | '/support'
     | '/transactions'
     | '/transfer'
+    | '/admin/card-requests'
     | '/admin/dashboard'
+    | '/admin/deposit-settings'
     | '/admin/login'
+    | '/admin/users/$userId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -183,8 +213,11 @@ export interface FileRouteTypes {
     | '/support'
     | '/transactions'
     | '/transfer'
+    | '/admin/card-requests'
     | '/admin/dashboard'
+    | '/admin/deposit-settings'
     | '/admin/login'
+    | '/admin/users/$userId'
   id:
     | '__root__'
     | '/'
@@ -200,16 +233,22 @@ export interface FileRouteTypes {
     | '/_authenticated/support'
     | '/_authenticated/transactions'
     | '/_authenticated/transfer'
+    | '/admin/card-requests'
     | '/admin/dashboard'
+    | '/admin/deposit-settings'
     | '/admin/login'
+    | '/admin/users/$userId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  AdminCardRequestsRoute: typeof AdminCardRequestsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminDepositSettingsRoute: typeof AdminDepositSettingsRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -305,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTransferRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/admin/card-requests': {
+      id: '/admin/card-requests'
+      path: '/admin/card-requests'
+      fullPath: '/admin/card-requests'
+      preLoaderRoute: typeof AdminCardRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/dashboard': {
       id: '/admin/dashboard'
       path: '/admin/dashboard'
@@ -312,11 +358,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/deposit-settings': {
+      id: '/admin/deposit-settings'
+      path: '/admin/deposit-settings'
+      fullPath: '/admin/deposit-settings'
+      preLoaderRoute: typeof AdminDepositSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/admin/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users/$userId': {
+      id: '/admin/users/$userId'
+      path: '/admin/users/$userId'
+      fullPath: '/admin/users/$userId'
+      preLoaderRoute: typeof AdminUsersUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -355,8 +415,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  AdminCardRequestsRoute: AdminCardRequestsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminDepositSettingsRoute: AdminDepositSettingsRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminUsersUserIdRoute: AdminUsersUserIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
