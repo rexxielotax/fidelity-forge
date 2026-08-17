@@ -5,17 +5,21 @@ export default defineConfig({
     server: { entry: "server" },
   },
   nitro: {
-    preset: "vercel",
-    output: {
-      dir: ".vercel/output",
-      serverDir: ".vercel/output/functions/__server.func",
-      publicDir: ".vercel/output/static",
-    },
-    // @ts-expect-error - rolldownConfig is a valid Nitro option but missing from this wrapper's types
-    rolldownConfig: {
-      experimental: {
-        chunkOptimization: false,
-      },
+  preset: "vercel",
+  output: {
+    dir: ".vercel/output",
+    serverDir: ".vercel/output/functions/__server.func",
+    publicDir: ".vercel/output/static",
+  },
+  // @ts-expect-error - externals is a valid Nitro option but missing from this wrapper's types
+  externals: {
+    inline: ["tslib"],
+  },
+  // @ts-expect-error - rolldownConfig is a valid Nitro option but missing from this wrapper's types
+  rolldownConfig: {
+    experimental: {
+      chunkOptimization: false,
     },
   },
+},
 });
