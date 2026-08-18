@@ -21,10 +21,10 @@ import { downloadReceipt } from "@/lib/receipt";
 export const Route = createFileRoute("/_authenticated/transfer")({
   head: () => ({
     meta: [
-      { title: "Transfer money — Wellspring Bank" },
-      { name: "description", content: "Send a simulated transfer in four steps: details, review, confirm, complete." },
-      { property: "og:title", content: "Transfer money — Wellspring Bank" },
-      { property: "og:description", content: "Send a simulated transfer to any beneficiary." },
+      { title: "Transfer money — Nirmal Bank" },
+      { name: "description", content: "Send a transfer in four steps: details, review, confirm, complete." },
+      { property: "og:title", content: "Transfer money — Nirmal Bank" },
+      { property: "og:description", content: "Send a transfer to any beneficiary." },
     ],
   }),
   component: TransferPage,

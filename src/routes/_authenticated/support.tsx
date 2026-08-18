@@ -18,9 +18,9 @@ import { dateTime } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/support")({
   head: () => ({
     meta: [
-      { title: "Support — Wellspring Bank" },
-      { name: "description", content: "Open a support ticket and track replies from the Wellspring Bank team." },
-      { property: "og:title", content: "Support — Wellspring Bank" },
+      { title: "Support — Nirmal Bank" },
+      { name: "description", content: "Open a support ticket and track replies from the Nirmal Bank team." },
+      { property: "og:title", content: "Support — Nirmal Bank" },
       { property: "og:description", content: "Open a ticket and track replies." },
     ],
   }),

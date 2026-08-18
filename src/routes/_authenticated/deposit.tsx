@@ -68,19 +68,19 @@ const METHODS = [
     id: "paypal",
     label: "PayPal",
     icon: Wallet,
-    hint: "Simulated PayPal deposit",
+    hint: "Deposit via PayPal",
   },
   {
     id: "cashapp",
     label: "Cash App",
     icon: CreditCard,
-    hint: "Simulated Cash App deposit",
+    hint: "Deposit via Cash App",
   },
   {
     id: "bank_transfer",
     label: "Bank Transfer",
     icon: Landmark,
-    hint: "Simulated bank transfer",
+    hint: "Deposit via bank transfer",
   },
   {
     id: "crypto",
@@ -98,16 +98,16 @@ type SelectedMethod = MethodId | CryptoMethod;
 
 const METHOD_INFO: Record<MethodId, string> = {
   paypal:
-    "Use the  PayPal account details below to complete your deposit. No real PayPal transaction is performed.",
+    "Use the PayPal account details below to complete your deposit. This deposit is processed within Nirmal Bank and does not initiate an external PayPal transaction.",
 
   cashapp:
-    "Use the  Cash App details below. This demo does not connect to Cash App or process real payments.",
+    "Use the Cash App details below. This deposit is processed within Nirmal Bank and does not connect to Cash App.",
 
   bank_transfer:
-    "Use the  bank transfer details below. No real bank transfer is initiated by this application.",
+    "Use the bank transfer details below. This deposit is processed within Nirmal Bank and does not initiate an external bank transfer.",
 
   crypto:
-    "Choose Bitcoin or USDT below. This demo does not connect to a blockchain or process real cryptocurrency.",
+    "Choose Bitcoin or USDT below. This deposit is processed within Nirmal Bank and does not interact with a blockchain network.",
 };
 
 const DEPOSIT_DETAILS = {
@@ -115,58 +115,58 @@ const DEPOSIT_DETAILS = {
     title: "PayPal Deposit Details",
 
     description:
-      "Send your  deposit to the PayPal account below.",
+      "Send your deposit to the PayPal account below.",
 
     fields: [
       {
         label: "PayPal account",
-        value: "demo-paypal@nirmalbank.test",
+        value: "deposits@nirmalbank.io",
       },
       {
         label: "Account name",
-        value: "Nirmal Bank Demo",
+        value: "Nirmal Bank",
       },
     ],
 
     notice:
-      "Demo only — this PayPal account is not a real receiving account.",
+      "This account is provided for reference only and is not a live receiving account.",
   },
 
   cashapp: {
     title: "Cash App Deposit Details",
 
     description:
-      "Use the simulated Cash App details below.",
+      "Use the Cash App details below.",
 
     fields: [
       {
         label: "Cash App",
-        value: "$NirmalBankDemo",
+        value: "$NirmalBank",
       },
       {
         label: "Account name",
-        value: "Nirmal Bank Demo",
+        value: "Nirmal Bank",
       },
     ],
 
     notice:
-      "Demo only — this Cash App identifier is not connected to a real account.",
+      "This Cash App identifier is provided for reference only and is not connected to a live account.",
   },
 
   bank_transfer: {
     title: "Bank Transfer Details",
 
     description:
-      "Use these simulated banking details when making your demo transfer.",
+      "Use these banking details when making your transfer.",
 
     fields: [
       {
         label: "Bank name",
-        value: "Nirmal Bank — Demo",
+        value: "Nirmal Bank",
       },
       {
         label: "Account name",
-        value: "Nirmal Bank Demo Account",
+        value: "Nirmal Bank Account",
       },
       {
         label: "Account number",
@@ -178,19 +178,19 @@ const DEPOSIT_DETAILS = {
       },
       {
         label: "SWIFT / BIC",
-        value: "DEMONGB0XXX",
+        value: "NIRMGB2LXXX",
       },
     ],
 
     notice:
-      "Demo only — these banking details are placeholders and cannot receive real funds.",
+      "These banking details are provided for reference only and cannot receive real funds.",
   },
 
   usdt: {
     title: "USDT Deposit",
 
     description:
-      "Select the network and use the simulated deposit address.",
+      "Select the network and use the deposit address below.",
 
     fields: [
       {
@@ -199,19 +199,19 @@ const DEPOSIT_DETAILS = {
       },
       {
         label: "USDT address",
-        value: "DEMO-USDT-TRC20-ADDRESS",
+        value: "TNRML0000USDT0TRC200ADDRESS0000",
       },
     ],
 
     notice:
-      "Demo only — this is not a real blockchain address. Do not send real cryptocurrency to it.",
+      "This is not a live blockchain address. Do not send real cryptocurrency to it.",
   },
 
   btc: {
     title: "Bitcoin Deposit",
 
     description:
-      "Use the simulated Bitcoin deposit address below.",
+      "Use the Bitcoin deposit address below.",
 
     fields: [
       {
@@ -220,12 +220,12 @@ const DEPOSIT_DETAILS = {
       },
       {
         label: "BTC address",
-        value: "DEMO-BTC-ADDRESS",
+        value: "bc1qnirmalbank0000000000000000000",
       },
     ],
 
     notice:
-      "Demo only — this is not a real Bitcoin address. Do not send real cryptocurrency to it.",
+      "This is not a live Bitcoin address. Do not send real cryptocurrency to it.",
   },
 } as const;
 
@@ -1208,7 +1208,7 @@ function DepositPage() {
           </div>
 
           <div className="rounded-xl bg-muted px-4 py-3 text-sm text-muted-foreground">
-            This is a simulated deposit. No real funds, cards, bank transfers, PayPal transactions, Cash App transactions, or cryptocurrency transactions are processed.
+            This deposit is processed within Nirmal Bank. No funds are transferred through PayPal, Cash App, a bank network, or a cryptocurrency network.
           </div>
 
           <div className="flex gap-2">

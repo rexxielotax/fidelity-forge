@@ -65,7 +65,7 @@ export const Route = createFileRoute("/_authenticated/cards")({
       { title: "Cards — Nirmal Bank" },
       {
         name: "description",
-        content: "Request and manage simulated bank cards.",
+        content: "Manage your cards and request a new virtual or physical card.",
       },
     ],
   }),
@@ -80,14 +80,14 @@ type PaymentMethod = "btc" | "usdt" | "ethereum" | "bank_transfer" | "gift_card"
 const TIERS = [
   { key: "standard" as const, title: "Standard", description: "Everyday spending and online purchases." },
   { key: "gold" as const, title: "Gold", description: "Higher limits with a premium design." },
-  { key: "platinum" as const, title: "Platinum", description: "Premium simulated card with the highest limits." },
+  { key: "platinum" as const, title: "Platinum", description: "Our premium tier, with the highest limits." },
 ];
 
 const PAYMENT_METHODS = [
-  { key: "btc" as const, title: "Bitcoin", description: "Simulated Bitcoin payment", icon: Bitcoin },
-  { key: "usdt" as const, title: "USDT", description: "Simulated USDT payment", icon: CreditCard },
-  { key: "ethereum" as const, title: "Ethereum", description: "Simulated Ethereum payment", icon: CreditCard },
-  { key: "bank_transfer" as const, title: "Bank Transfer", description: "Simulated bank transfer", icon: Building2 },
+  { key: "btc" as const, title: "Bitcoin", description: "Pay with Bitcoin", icon: Bitcoin },
+  { key: "usdt" as const, title: "USDT", description: "Pay with USDT", icon: CreditCard },
+  { key: "ethereum" as const, title: "Ethereum", description: "Pay with Ethereum", icon: CreditCard },
+  { key: "bank_transfer" as const, title: "Bank Transfer", description: "Pay via bank transfer", icon: Building2 },
   { key: "gift_card" as const, title: "Gift Card", description: "Submit a gift-card image for admin review", icon: Gift },
 ];
 
@@ -243,7 +243,7 @@ function CardsPage() {
               </p>
               <h1 className="mt-2 font-display text-2xl font-bold">Your cards</h1>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                View your simulated cards or request a new Standard, Gold, or Platinum card.
+                View your cards or request a new Standard, Gold, or Platinum card.
               </p>
             </div>
 
@@ -330,7 +330,7 @@ function CardsPage() {
             <EmptyState
               icon={<CreditCard className="size-5" />}
               title="No cards yet"
-              description="Request a card above to start the simulated card approval process."
+              description="Request a card above to start the card approval process."
               action={
                 <Button onClick={() => { resetRequest(); setOpen(true); }}>
                   Request a card
@@ -478,14 +478,14 @@ function CardsPage() {
                 <ChoiceCard
                   selected={delivery === "online"}
                   title="Online Card"
-                  description="For simulated online purchases."
+                  description="For online purchases."
                   icon={<CreditCard className="size-6" />}
                   onClick={() => setDelivery("online")}
                 />
                 <ChoiceCard
                   selected={delivery === "physical"}
                   title="Physical Card"
-                  description="For a simulated physical-card request."
+                  description="For a physical card request."
                   icon={<CreditCard className="size-6" />}
                   onClick={() => setDelivery("physical")}
                 />
@@ -509,7 +509,7 @@ function CardsPage() {
               <div>
                 <h3 className="font-semibold">Choose payment method</h3>
                 <p className="text-sm text-muted-foreground">
-                  Select how the simulated card request should be paid.
+                  Select how you'd like to pay the processing fee.
                 </p>
               </div>
 
@@ -636,7 +636,7 @@ function CardsPage() {
               )}
 
               <div className="rounded-xl bg-muted p-3 text-xs text-muted-foreground">
-                This is a simulated request. It will appear in the admin console for review.
+                Your request will be submitted for admin review.
               </div>
 
               <div className="flex gap-2">

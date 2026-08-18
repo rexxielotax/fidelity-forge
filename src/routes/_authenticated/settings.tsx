@@ -16,9 +16,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — wellsfargo Bank" },
+      { title: "Settings — Nirmal Bank" },
       { name: "description", content: "Update your profile, currency preference and notification settings." },
-      { property: "og:title", content: "Settings — wellsfargo Bank" },
+      { property: "og:title", content: "Settings — Nirmal Bank" },
       { property: "og:description", content: "Profile, currency and notification preferences." },
     ],
   }),

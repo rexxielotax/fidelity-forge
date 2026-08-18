@@ -19,9 +19,9 @@ import { greeting, money } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — wellsfargo Bank" },
-      { name: "description", content: "Your balances, quick actions and recent activity in wellsfargo Bank." },
-      { property: "og:title", content: "Dashboard — wellsfargo Bank" },
+      { title: "Dashboard — Nirmal Bank" },
+      { name: "description", content: "Your balances, quick actions and recent activity in Nirmal Bank." },
+      { property: "og:title", content: "Dashboard — Nirmal Bank" },
       { property: "og:description", content: "Balances, quick actions and recent activity." },
     ],
   }),

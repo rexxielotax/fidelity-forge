@@ -331,7 +331,7 @@ values
     'BTC address',
     'DEMO-BTC-ADDRESS',
     'Use the simulated Bitcoin deposit address below.',
-    'Demo only — this is not a real Bitcoin address. Do not send real cryptocurrency to it.'
+    'Demo only  this is not a real Bitcoin address. Do not send real cryptocurrency to it.'
   )
 
 on conflict (method, field_key) do nothing;
