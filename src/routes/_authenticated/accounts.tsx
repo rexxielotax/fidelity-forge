@@ -10,9 +10,9 @@ import { money } from "@/lib/format";
 export const Route = createFileRoute("/_authenticated/accounts")({
   head: () => ({
     meta: [
-      { title: "Accounts — Wellspring Bank" },
+      { title: "Accounts — wellsfargo Bank" },
       { name: "description", content: "View your live checking and savings account balances and activity." },
-      { property: "og:title", content: "Accounts — Wellspring Bank" },
+      { property: "og:title", content: "Accounts — wellsfargo Bank" },
       { property: "og:description", content: "Checking and savings balances and activity." },
     ],
   }),

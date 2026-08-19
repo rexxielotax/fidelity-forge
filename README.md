@@ -2,7 +2,7 @@
 
 WELLSFARGO — Build Specification
 (Working project name: wellsfargo Bank | Product name: wellsfargo)
-Type: Simulated banking web app — /portfolio/learning project
+Type: live banking web app — /portfolio/learning project
 Status: Requirements finalized, ready for build
 
 > ⚠️ This is a fictional, live banking application for demonstration and learning purposes only. It does not connect to real banking networks, real accounts, or real money movement. All balances and transactions are live data stored in Supabase.

@@ -155,7 +155,7 @@ function DepositSettingsAdmin() {
             </h1>
 
             <p className="text-xs text-muted-foreground">
-              Simulated values shown on the user Deposit page.
+              live values shown on the user Deposit page.
             </p>
           </div>
         </div>

@@ -36,7 +36,7 @@ export async function createDepositRequest(params: {
     category: "deposit",
     amount,
     status: "pending",
-    description: "Simulated deposit",
+    description: "live deposit",
     reference: reference("DEP"),
   });
 

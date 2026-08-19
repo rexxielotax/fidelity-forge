@@ -229,26 +229,26 @@ values
     'paypal',
     'account_name',
     'Account name',
-    'Nirmal Bank Demo',
+    'Nirmal Bank live',
     'Use the live PayPal account details below.',
-    'Demo only — this PayPal account is not a real receiving account.'
+    'live only — this PayPal account is not a real receiving account.'
   ),
   (
     'paypal',
     'account',
     'PayPal account',
-    'demo-paypal@nirmalbank.test',
+    'live-paypal@nirmalbank.test',
     'Use the live PayPal account details below.',
-    'Demo only — this PayPal account is not a real receiving account.'
+    'live only — this PayPal account is not a real receiving account.'
   ),
 
   (
     'cashapp',
     'account_name',
     'Account name',
-    'Nirmal Bank Demo',
+    'Nirmal Bank live',
     'Use the live Cash App details below.',
-    'Demo only — this Cash App identifier is not connected to a real account.'
+    'live only — this Cash App identifier is not connected to a real account.'
   ),
   (
     'cashapp',
@@ -256,48 +256,48 @@ values
     'Cash App',
     '$NirmalBankDemo',
     'Use the live Cash App details below.',
-    'Demo only — this Cash App identifier is not connected to a real account.'
+    'live only — this Cash App identifier is not connected to a real account.'
   ),
 
   (
     'bank_transfer',
     'bank_name',
     'Bank name',
-    'Nirmal Bank — Demo',
-    'Use these live banking details when making your demo transfer.',
-    'Demo only — these banking details are placeholders and cannot receive real funds.'
+    'Nirmal Bank — live',
+    'Use these live banking details when making your live transfer.',
+    'live only — these banking details are placeholders and cannot receive real funds.'
   ),
   (
     'bank_transfer',
     'account_name',
     'Account name',
-    'Nirmal Bank Demo Account',
-    'Use these live banking details when making your demo transfer.',
-    'Demo only — these banking details are placeholders and cannot receive real funds.'
+    'Nirmal Bank live Account',
+    'Use these live banking details when making your live transfer.',
+    'live only — these banking details are placeholders and cannot receive real funds.'
   ),
   (
     'bank_transfer',
     'account_number',
     'Account number',
     '0000000000',
-    'Use these live banking details when making your demo transfer.',
-    'Demo only — these banking details are placeholders and cannot receive real funds.'
+    'Use these live banking details when making your live transfer.',
+    'live only — these banking details are placeholders and cannot receive real funds.'
   ),
   (
     'bank_transfer',
     'routing_number',
     'Routing number',
     '000000000',
-    'Use these live banking details when making your demo transfer.',
-    'Demo only — these banking details are placeholders and cannot receive real funds.'
+    'Use these live banking details when making your live transfer.',
+    'live only — these banking details are placeholders and cannot receive real funds.'
   ),
   (
     'bank_transfer',
     'swift',
     'SWIFT / BIC',
     'DEMONGB0XXX',
-    'Use these live banking details when making your demo transfer.',
-    'Demo only — these banking details are placeholders and cannot receive real funds.'
+    'Use these live banking details when making your live transfer.',
+    'live only — these banking details are placeholders and cannot receive real funds.'
   ),
 
   (
@@ -306,15 +306,15 @@ values
     'Network',
     'TRC20',
     'Select the network shown below.',
-    'Demo only — this is not a real blockchain address.'
+    'live only — this is not a real blockchain address.'
   ),
   (
     'usdt',
     'address',
     'USDT address',
-    'DEMO-USDT-TRC20-ADDRESS',
+    'live-USDT-TRC20-ADDRESS',
     'Use the live USDT deposit address below.',
-    'Demo only — this is not a real blockchain address. Do not send real cryptocurrency to it.'
+    'live only — this is not a real blockchain address. Do not send real cryptocurrency to it.'
   ),
 
   (
@@ -323,15 +323,15 @@ values
     'Network',
     'Bitcoin',
     'Use the live Bitcoin deposit address below.',
-    'Demo only — this is not a real blockchain network.'
+    'live only — this is not a real blockchain network.'
   ),
   (
     'btc',
     'address',
     'BTC address',
-    'DEMO-BTC-ADDRESS',
+    'live-BTC-ADDRESS',
     'Use the live Bitcoin deposit address below.',
-    'Demo only — this is not a real Bitcoin address. Do not send real cryptocurrency to it.'
+    'live only — this is not a real Bitcoin address. Do not send real cryptocurrency to it.'
   )
 
 on conflict (method, field_key) do nothing;

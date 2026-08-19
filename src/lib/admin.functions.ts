@@ -12,12 +12,12 @@ export const adminLogin = createServerFn({ method: "POST" }).handler(async () =>
   const session = await useSession<{ admin?: string }>(adminSessionConfig());
 
   await session.update({
-    admin: "demo-admin",
+    admin: "live-admin",
   });
 
   return {
     ok: true,
-    email: "demo-admin",
+    email: "live-admin",
   };
 });
 

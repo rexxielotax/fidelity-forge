@@ -118,7 +118,7 @@ function Landing() {
       </section>
 
       <footer className="border-t border-border px-5 py-6 text-center text-xs text-muted-foreground">
-        Wellspring Bank — Secure digital banking.
+        wellsfargo Bank — Secure digital banking.
       </footer>
     </main>
   );

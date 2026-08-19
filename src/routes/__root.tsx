@@ -78,14 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Wellspring Bank — Simulated Banking Demo" },
+      { title: "wellsfargo Bank — live Banking live" },
       {
         name: "description",
         content:
-          "Wellspring Bank is a fictional online banking demo with accounts, transfers, virtual cards and support — no real money involved.",
+          "wellsfargo Bank is a fictional online banking live with accounts, transfers, virtual cards and support — no real money involved.",
       },
-      { name: "author", content: "Wellspring Bank" },
-      { property: "og:title", content: "Wellspring Bank — Simulated Banking Demo" },
+      { name: "author", content: "wellsfargo Bank" },
+      { property: "og:title", content: "wellsfargo Bank — live Banking live" },
       {
         property: "og:description",
         content: "A fictional banking web app for portfolio and learning purposes.",

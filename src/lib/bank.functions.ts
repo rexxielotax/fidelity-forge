@@ -256,7 +256,7 @@ export const createDeposit = createServerFn({ method: "POST" })
         category: "deposit",
         amount: data.amount,
         status: "pending",
-        description: `Simulated deposit via ${DEPOSIT_METHOD_LABEL[data.method]}`,
+        description: `deposit via ${DEPOSIT_METHOD_LABEL[data.method]}`,
         reference: reference(),
       })
       .select("*")
