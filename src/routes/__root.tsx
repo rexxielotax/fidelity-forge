@@ -75,25 +75,44 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "wellsfargo Bank — live Banking live" },
-      {
-        name: "description",
-        content:
-          "wellsfargo Bank is a fictional online banking live with accounts, transfers, virtual cards and support — no real money involved.",
-      },
-      { name: "author", content: "wellsfargo Bank" },
-      { property: "og:title", content: "wellsfargo Bank — live Banking live" },
-      {
-        property: "og:description",
-        content: "A fictional banking web app for portfolio and learning purposes.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
-    ],
+  meta: [
+    { charSet: "utf-8" },
+    {
+      name: "viewport",
+      content: "width=device-width, initial-scale=1",
+    },
+    {
+      title: "wellsfargo Bank",
+    },
+    {
+      name: "description",
+      content:
+        "wellsfargo Bank is a modern digital banking platform with accounts, transfers, virtual cards and support.",
+    },
+    {
+      name: "author",
+      content: "wellsfargo Bank",
+    },
+    {
+      property: "og:title",
+      content: "wellsfargo Bank",
+    },
+    {
+      property: "og:description",
+      content:
+        "Manage your accounts, transfers, and cards all in one place with wellsfargo Bank.",
+    },
+    {
+      property: "og:type",
+      content: "website",
+    },
+    {
+      name: "twitter:card",
+      content: "summary_large_image",
+    },
+    
+  ],
+  // ...keep the links array exactly as-is below this
     links: [
       {
         rel: "stylesheet",
