@@ -11,9 +11,9 @@ import { useProfile, useTransactions } from "@/hooks/useBank";
 export const Route = createFileRoute("/_authenticated/transactions")({
   head: () => ({
     meta: [
-      { title: "Transactions — Nirmal Bank" },
+      { title: "Transactions — wellsfargo Bank" },
       { name: "description", content: "Search your full transaction history and download PDF receipts." },
-      { property: "og:title", content: "Transactions — Nirmal Bank" },
+      { property: "og:title", content: "Transactions — wellsfargo Bank" },
       { property: "og:description", content: "Full transaction history with downloadable receipts." },
     ],
   }),
