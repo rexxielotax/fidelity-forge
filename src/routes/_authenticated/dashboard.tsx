@@ -91,7 +91,7 @@ const QUICK = [
             {hidden ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
-        <p className="mt-2 font-display text-1=2xl font-extrabold">
+        <p className="mt-2 font-display text-1=3xl font-extrabold">
           {hidden ? "••••••" : money(total, currency)}
         </p>
         <p className="mt-1 text-sm text-primary-foreground/75">
