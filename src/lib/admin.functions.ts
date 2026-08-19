@@ -8,18 +8,25 @@ import { adminSessionConfig, reference } from "./bank-helpers";
 |--------------------------------------------------------------------------
 */
 
-export const adminLogin = createServerFn({ method: "POST" }).handler(async () => {
-  const session = await useSession<{ admin?: string }>(adminSessionConfig());
+export const adminLogin = createServerFn({ method: "POST" })
+  .inputValidator((data: { password: string }) => {
+    if (!data.password?.trim()) throw new Error("Password is required");
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const adminPassword = process.env["ADMIN_PASSWORD"];
+    if (!adminPassword) {
+      throw new Error("Admin login is not configured. Contact the site owner.");
+    }
+    if (data.password !== adminPassword) {
+      throw new Error("Incorrect password");
+    }
 
-  await session.update({
-    admin: "live-admin",
+    const session = await useSession<{ admin?: string }>(adminSessionConfig());
+    await session.update({ admin: "admin" });
+
+    return { ok: true, email: "admin" };
   });
-
-  return {
-    ok: true,
-    email: "live-admin",
-  };
-});
 
 /*
 |--------------------------------------------------------------------------
