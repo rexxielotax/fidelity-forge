@@ -23,9 +23,9 @@ export const adminLogin = createServerFn({ method: "POST" })
     }
 
     const session = await useSession<{ admin?: string }>(adminSessionConfig());
-    await session.update({ admin: "admin" });
+    await session.update({ admin: "live-admin" });
 
-    return { ok: true, email: "admin" };
+    return { ok: true, email: "live-admin" };
   });
 
 /*
@@ -574,7 +574,7 @@ type DepositSettingInput = {
   notice?: string;
 };
 
-const DEFAULT_DEMO_NOTICE =
+const DEFAULT_live_NOTICE =
   "For reference only — this detail is not linked to an active account.";
 
 export const getDepositSettings = createServerFn({ method: "GET" }).handler(async () => {
@@ -605,7 +605,7 @@ export const updateDepositSetting = createServerFn({ method: "POST" })
       fieldKey: data.fieldKey.trim(),
       fieldLabel: data.fieldLabel.trim(),
       description: data.description?.trim() ?? "",
-      notice: data.notice?.trim() || DEFAULT_DEMO_NOTICE,
+      notice: data.notice?.trim() || DEFAULT_live_NOTICE,
     };
   })
   .handler(async ({ data }) => {
