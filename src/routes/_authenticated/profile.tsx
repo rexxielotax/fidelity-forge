@@ -199,8 +199,8 @@ function ProfilePage() {
         data: {
           requestedTier: target,
           paymentMethod: payment,
-          giftCardType: payment === "gift_card" ? giftCardType : undefined,
-          giftCardImageUrls: payment === "gift_card" ? giftCardImageUrls : undefined,
+          giftCardType: payment === "gift_card" ? giftCardType : "",
+            giftCardImageUrls: payment === "gift_card" ? giftCardImageUrls : [],
         },
       });
 
