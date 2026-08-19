@@ -103,7 +103,7 @@ function AdminCardRequests() {
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h2 className="font-display text-xl font-bold">Requests</h2>
-            <p className="text-sm text-muted-foreground">Review submitted simulated card requests.</p>
+            <p className="text-sm text-muted-foreground">Review submitted live card requests.</p>
           </div>
 
           <Button variant="secondary" size="sm" onClick={() => query.refetch()} disabled={query.isFetching}>

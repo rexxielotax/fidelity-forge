@@ -25,7 +25,13 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
 });
 
-const CURRENCIES = ["USD", "EUR", "GBP", "NGN", "CAD"];
+const CURRENCIES = [
+  "USD", "EUR", "GBP", "NGN", "CAD",
+  // Asia
+  "JPY", "CNY", "INR", "KRW", "SGD", "HKD", "MYR", "THB", "IDR", "PHP", "VND", "PKR",
+  // Middle East / Dubai
+  "AED", "SAR", "QAR",
+];
 
 function SettingsPage() {
   const navigate = useNavigate();

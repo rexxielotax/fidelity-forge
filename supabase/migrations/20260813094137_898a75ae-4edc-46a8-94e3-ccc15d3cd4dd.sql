@@ -170,7 +170,7 @@ BEGIN
   ON CONFLICT DO NOTHING;
 
   INSERT INTO public.notifications (user_id, type, title, message)
-  VALUES (NEW.id, 'system', 'Welcome aboard', 'Your checking and savings accounts are ready. This is a simulated banking environment.');
+  VALUES (NEW.id, 'system', 'Welcome aboard', 'Your checking and savings accounts are ready. This is a live banking environment.');
 
   RETURN NEW;
 END;
@@ -230,7 +230,7 @@ values
     'account_name',
     'Account name',
     'Nirmal Bank Demo',
-    'Use the simulated PayPal account details below.',
+    'Use the live PayPal account details below.',
     'Demo only — this PayPal account is not a real receiving account.'
   ),
   (
@@ -238,7 +238,7 @@ values
     'account',
     'PayPal account',
     'demo-paypal@nirmalbank.test',
-    'Use the simulated PayPal account details below.',
+    'Use the live PayPal account details below.',
     'Demo only — this PayPal account is not a real receiving account.'
   ),
 
@@ -247,7 +247,7 @@ values
     'account_name',
     'Account name',
     'Nirmal Bank Demo',
-    'Use the simulated Cash App details below.',
+    'Use the live Cash App details below.',
     'Demo only — this Cash App identifier is not connected to a real account.'
   ),
   (
@@ -255,7 +255,7 @@ values
     'account',
     'Cash App',
     '$NirmalBankDemo',
-    'Use the simulated Cash App details below.',
+    'Use the live Cash App details below.',
     'Demo only — this Cash App identifier is not connected to a real account.'
   ),
 
@@ -264,7 +264,7 @@ values
     'bank_name',
     'Bank name',
     'Nirmal Bank — Demo',
-    'Use these simulated banking details when making your demo transfer.',
+    'Use these live banking details when making your demo transfer.',
     'Demo only — these banking details are placeholders and cannot receive real funds.'
   ),
   (
@@ -272,7 +272,7 @@ values
     'account_name',
     'Account name',
     'Nirmal Bank Demo Account',
-    'Use these simulated banking details when making your demo transfer.',
+    'Use these live banking details when making your demo transfer.',
     'Demo only — these banking details are placeholders and cannot receive real funds.'
   ),
   (
@@ -280,7 +280,7 @@ values
     'account_number',
     'Account number',
     '0000000000',
-    'Use these simulated banking details when making your demo transfer.',
+    'Use these live banking details when making your demo transfer.',
     'Demo only — these banking details are placeholders and cannot receive real funds.'
   ),
   (
@@ -288,7 +288,7 @@ values
     'routing_number',
     'Routing number',
     '000000000',
-    'Use these simulated banking details when making your demo transfer.',
+    'Use these live banking details when making your demo transfer.',
     'Demo only — these banking details are placeholders and cannot receive real funds.'
   ),
   (
@@ -296,7 +296,7 @@ values
     'swift',
     'SWIFT / BIC',
     'DEMONGB0XXX',
-    'Use these simulated banking details when making your demo transfer.',
+    'Use these live banking details when making your demo transfer.',
     'Demo only — these banking details are placeholders and cannot receive real funds.'
   ),
 
@@ -313,7 +313,7 @@ values
     'address',
     'USDT address',
     'DEMO-USDT-TRC20-ADDRESS',
-    'Use the simulated USDT deposit address below.',
+    'Use the live USDT deposit address below.',
     'Demo only — this is not a real blockchain address. Do not send real cryptocurrency to it.'
   ),
 
@@ -322,7 +322,7 @@ values
     'network',
     'Network',
     'Bitcoin',
-    'Use the simulated Bitcoin deposit address below.',
+    'Use the live Bitcoin deposit address below.',
     'Demo only — this is not a real blockchain network.'
   ),
   (
@@ -330,8 +330,8 @@ values
     'address',
     'BTC address',
     'DEMO-BTC-ADDRESS',
-    'Use the simulated Bitcoin deposit address below.',
-    'Demo only  this is not a real Bitcoin address. Do not send real cryptocurrency to it.'
+    'Use the live Bitcoin deposit address below.',
+    'Demo only — this is not a real Bitcoin address. Do not send real cryptocurrency to it.'
   )
 
 on conflict (method, field_key) do nothing;

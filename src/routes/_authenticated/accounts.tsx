@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/accounts")({
   head: () => ({
     meta: [
       { title: "Accounts — Wellspring Bank" },
-      { name: "description", content: "View your simulated checking and savings account balances and activity." },
+      { name: "description", content: "View your live checking and savings account balances and activity." },
       { property: "og:title", content: "Accounts — Wellspring Bank" },
       { property: "og:description", content: "Checking and savings balances and activity." },
     ],

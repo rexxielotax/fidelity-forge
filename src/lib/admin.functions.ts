@@ -512,6 +512,43 @@ export const adminSetAccountBalance = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+  /*
+|--------------------------------------------------------------------------
+| SET TRANSFER LOCK
+|--------------------------------------------------------------------------
+*/
+
+export const adminSetTransferLock = createServerFn({ method: "POST" })
+  .validator((data: { userId: string; locked: boolean }) => {
+    if (!data.userId) throw new Error("Missing user");
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const session = await useSession<{ admin?: string }>(adminSessionConfig());
+    const admin = session.data.admin;
+    if (!admin) throw new Error("Unauthorized");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: updated, error } = await supabaseAdmin
+      .from("profiles")
+      .update({ transfers_locked: data.locked, updated_at: new Date().toISOString() })
+      .eq("id", data.userId)
+      .select("*")
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!updated) throw new Error("User not found");
+
+    await supabaseAdmin.from("admin_actions").insert({
+      admin_email: admin,
+      action: data.locked ? "lock_user_transfers" : "unlock_user_transfers",
+      target_user_id: data.userId,
+    });
+
+    return updated;
+  }); 
 /*
 |--------------------------------------------------------------------------
 | DEPOSIT SETTINGS (admin — auth required)
@@ -531,7 +568,7 @@ type DepositSettingInput = {
 };
 
 const DEFAULT_DEMO_NOTICE =
-  "Demo only — this is a simulated value and does not connect to any real account.";
+  "For reference only — this detail is not linked to an active account.";
 
 export const getDepositSettings = createServerFn({ method: "GET" }).handler(async () => {
   const session = await useSession<{ admin?: string }>(adminSessionConfig());
@@ -733,4 +770,109 @@ export const adminRejectCardRequest = createServerFn({ method: "POST" })
     });
 
     return updated;
+  });
+  
+  export const adminGetConversations = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await useSession<{ admin?: string }>(adminSessionConfig());
+  if (!session.data.admin) throw new Error("Unauthorized");
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data: messages, error } = await supabaseAdmin
+    .from("support_messages")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(`Unable to load conversations: ${error.message}`);
+
+  const byUser = new Map<string, { lastMessage: string; lastAt: string; unread: number }>();
+  for (const m of messages ?? []) {
+    const existing = byUser.get(m.user_id);
+    if (!existing) {
+      byUser.set(m.user_id, {
+        lastMessage: m.body ?? "[image]",
+        lastAt: m.created_at,
+        unread: m.sender === "user" && !m.read_by_admin ? 1 : 0,
+      });
+    } else if (m.sender === "user" && !m.read_by_admin) {
+      existing.unread += 1;
+    }
+  }
+
+  const userIds = [...byUser.keys()];
+  const { data: profiles } = await supabaseAdmin
+    .from("profiles")
+    .select("id, full_name, email")
+    .in("id", userIds.length ? userIds : ["00000000-0000-0000-0000-000000000000"]);
+
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
+
+  return userIds
+    .map((userId) => ({
+      userId,
+      profile: profileMap.get(userId) ?? null,
+      ...byUser.get(userId)!,
+    }))
+    .sort((a, b) => new Date(b.lastAt).getTime() - new Date(a.lastAt).getTime());
+});
+
+export const adminGetConversationMessages = createServerFn({ method: "GET" })
+  .validator((data: { userId: string }) => {
+    if (!data.userId) throw new Error("User ID is required");
+    return data;
+  })
+  .handler(async ({ data }) => {
+    const session = await useSession<{ admin?: string }>(adminSessionConfig());
+    if (!session.data.admin) throw new Error("Unauthorized");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: messages, error } = await supabaseAdmin
+      .from("support_messages")
+      .select("*")
+      .eq("user_id", data.userId)
+      .order("created_at", { ascending: true });
+
+    if (error) throw new Error(error.message);
+
+    await supabaseAdmin
+      .from("support_messages")
+      .update({ read_by_admin: true })
+      .eq("user_id", data.userId)
+      .eq("sender", "user")
+      .eq("read_by_admin", false);
+
+    return messages ?? [];
+  });
+
+export const adminReplyToUser = createServerFn({ method: "POST" })
+  .validator((data: { userId: string; body: string; imageUrls?: string[] }) => {
+    if (!data.userId) throw new Error("User ID is required");
+    if (!data.body?.trim() && !(data.imageUrls?.length)) throw new Error("Message cannot be empty");
+    return { userId: data.userId, body: data.body.trim(), imageUrls: data.imageUrls ?? [] };
+  })
+  .handler(async ({ data }) => {
+    const session = await useSession<{ admin?: string }>(adminSessionConfig());
+    const admin = session.data.admin;
+    if (!admin) throw new Error("Unauthorized");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error } = await supabaseAdmin.from("support_messages").insert({
+      user_id: data.userId,
+      sender: "admin",
+      body: data.body || null,
+      image_urls: data.imageUrls,
+      read_by_user: false,
+    });
+
+    if (error) throw new Error(error.message);
+
+    await supabaseAdmin.from("admin_actions").insert({
+      admin_email: admin,
+      action: "reply_support",
+      target_user_id: data.userId,
+    });
+
+    return { ok: true };
   });

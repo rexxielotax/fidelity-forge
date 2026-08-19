@@ -5,7 +5,7 @@ WELLSFARGO — Build Specification
 Type: Simulated banking web app — /portfolio/learning project
 Status: Requirements finalized, ready for build
 
-> ⚠️ This is a fictional, simulated banking application for demonstration and learning purposes only. It does not connect to real banking networks, real accounts, or real money movement. All balances and transactions are simulated data stored in Supabase.
+> ⚠️ This is a fictional, live banking application for demonstration and learning purposes only. It does not connect to real banking networks, real accounts, or real money movement. All balances and transactions are live data stored in Supabase.
 
 ---
 
@@ -54,9 +54,9 @@ Status: Requirements finalized, ready for build
 5. Cards
 
 - User-requested, not auto-issued at signup
-- Request flow: user selects card type → pays a processing fee deducted from their simulated balance
+- Request flow: user selects card type → pays a processing fee deducted from their live balance
 - Fee varies by card type — placeholder: Standard = $2,000, adjustable per tier later
-- Cosmetic "Pay with: USD / BTC / NGN" selector on the request form (purely visual — no real currency/crypto interaction; the fee is always deducted from the simulated balance)
+- Cosmetic "Pay with: USD / BTC / NGN" selector on the request form (purely visual — no real currency/crypto interaction; the fee is always deducted from the live balance)
 - If balance is insufficient, request is blocked
 - Once issued: Visa Debit-style virtual card with masked number, card holder name, expiry, daily limit
 - Card management: Lock/unlock, View PIN, Card Settings, Report Lost/Stolen

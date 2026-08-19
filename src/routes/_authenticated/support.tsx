@@ -1,157 +1,153 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { BookOpen, CreditCard, LifeBuoy, Send, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ImagePlus, Send, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
-import { EmptyState, ListSkeleton, StatusBadge } from "@/components/bank-bits";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProfile, useTickets } from "@/hooks/useBank";
+import { useProfile, useSupportMessages, sendSupportMessage, uploadSupportImages } from "@/hooks/useBank";
 import { supabase } from "@/integrations/supabase/client";
-import { dateTime } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/support")({
   head: () => ({
     meta: [
-      { title: "Support — Nirmal Bank" },
-      { name: "description", content: "Open a support ticket and track replies from the Nirmal Bank team." },
-      { property: "og:title", content: "Support — Nirmal Bank" },
-      { property: "og:description", content: "Open a ticket and track replies." },
+      { title: "Support — rexxie" },
+      { name: "description", content: "Chat with the rexxie support team." },
     ],
   }),
   component: SupportPage,
 });
 
-const TILES = [
-  { icon: CreditCard, title: "Cards & limits", body: "Freeze a card, view your PIN or upgrade your tier." },
-  { icon: ShieldCheck, title: "Account security", body: "Reset your password and review security alerts." },
-  { icon: BookOpen, title: "Transfers", body: "Understand pending status and settlement windows." },
-];
-
-const CATEGORIES = ["general", "transfer", "card", "account", "security"];
-
 function SupportPage() {
   const queryClient = useQueryClient();
   const { data: profile } = useProfile();
-  const { data: tickets, isLoading } = useTickets();
-  const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({ subject: "", category: "general", message: "" });
+  const { data: messages } = useSupportMessages();
+  const [text, setText] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [sending, setSending] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!profile) return;
-    setBusy(true);
-    const { error } = await supabase.from("support_tickets").insert({
-      user_id: profile.id,
-      subject: form.subject,
-      category: form.category,
-      message: form.message,
-    });
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    const channel = supabase
+      .channel(`support-${profile.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "support_messages", filter: `user_id=eq.${profile.id}` },
+        () => queryClient.invalidateQueries({ queryKey: ["support-messages"] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id, queryClient]);
+
+  function pickFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    setPendingFiles((prev) => [...prev, ...files]);
+    e.target.value = "";
+  }
+
+  function removeFile(idx: number) {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  async function handleSend() {
+    if (!profile?.id || (!text.trim() && pendingFiles.length === 0)) return;
+    setSending(true);
+    try {
+      let imageUrls: string[] = [];
+      if (pendingFiles.length) {
+        imageUrls = await uploadSupportImages(pendingFiles, profile.id);
+      }
+      await sendSupportMessage({ userId: profile.id, body: text.trim(), imageUrls });
+      setText("");
+      setPendingFiles([]);
+      queryClient.invalidateQueries({ queryKey: ["support-messages"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send message");
+    } finally {
+      setSending(false);
     }
-    toast.success("Ticket submitted — we'll reply shortly");
-    setForm({ subject: "", category: "general", message: "" });
-    queryClient.invalidateQueries({ queryKey: ["tickets"] });
   }
 
   return (
     <AppShell title="Support">
-      <div className="grid gap-3 sm:grid-cols-3">
-        {TILES.map((t) => (
-          <div key={t.title} className="rounded-2xl border border-border/70 bg-card p-4">
-            <t.icon className="size-5 text-primary" />
-            <p className="mt-3 text-sm font-semibold">{t.title}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{t.body}</p>
-          </div>
-        ))}
-      </div>
-
-      <form onSubmit={submit} className="mt-6 space-y-4 rounded-2xl border border-border/70 bg-card p-5">
-        <h3 className="font-display text-base font-semibold">Contact support</h3>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="sj">Subject</Label>
-            <Input
-              id="sj"
-              value={form.subject}
-              onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c} className="capitalize">
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="flex h-[calc(100vh-160px)] flex-col rounded-2xl border border-border/70 bg-card">
+        <div className="border-b border-border/70 px-5 py-4">
+          <h3 className="font-display text-base font-semibold">Support Chat</h3>
+          <p className="text-xs text-muted-foreground">Chat with our support team</p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="ms">How can we help?</Label>
-          <Textarea
-            id="ms"
-            rows={4}
-            value={form.message}
-            onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-            required
-          />
-        </div>
-        <Button type="submit" disabled={busy}>
-          <Send className="size-4" /> {busy ? "Sending…" : "Submit ticket"}
-        </Button>
-      </form>
 
-      <h3 className="mb-3 mt-7 text-sm font-semibold text-muted-foreground">Your tickets</h3>
-      {isLoading ? (
-        <ListSkeleton rows={2} />
-      ) : (tickets ?? []).length === 0 ? (
-        <EmptyState
-          icon={<LifeBuoy className="size-5" />}
-          title="No tickets yet"
-          description="When you contact support, your conversation history appears here."
-        />
-      ) : (
-        <div className="space-y-3">
-          {(tickets ?? []).map((t) => (
-            <div key={t.id} className="rounded-2xl border border-border/70 bg-card p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold">{t.subject}</p>
-                  <p className="text-xs capitalize text-muted-foreground">
-                    {t.category} · {dateTime(t.created_at)}
-                  </p>
-                </div>
-                <StatusBadge status={t.status === "in_progress" ? "pending" : t.status} />
+        <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+          {(messages ?? []).map((m) => (
+            <div key={m.id} className={cn("flex", m.sender === "user" ? "justify-end" : "justify-start")}>
+              <div
+                className={cn(
+                  "max-w-[75%] rounded-2xl px-4 py-2.5",
+                  m.sender === "user" ? "bg-primary text-primary-foreground" : "bg-muted",
+                )}
+              >
+                {m.body && <p className="text-sm">{m.body}</p>}
+                {m.image_urls?.length > 0 && (
+                  <div className="mt-2 grid grid-cols-2 gap-1.5">
+                    {m.image_urls.map((url: string, i: number) => (
+                      <img key={i} src={url} alt="attachment" className="rounded-lg" />
+                    ))}
+                  </div>
+                )}
+                <p className="mt-1 text-[10px] opacity-70">
+                  {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </p>
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">{t.message}</p>
-              {t.admin_reply && (
-                <div className="mt-3 rounded-xl bg-muted p-3 text-sm">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Support reply
-                  </p>
-                  <p className="mt-1">{t.admin_reply}</p>
-                </div>
-              )}
             </div>
           ))}
+          <div ref={bottomRef} />
         </div>
-      )}
+
+        {pendingFiles.length > 0 && (
+          <div className="flex flex-wrap gap-2 border-t border-border/70 px-4 py-2">
+            {pendingFiles.map((f, i) => (
+              <div key={i} className="relative">
+                <img src={URL.createObjectURL(f)} alt="" className="size-14 rounded-lg object-cover" />
+                <button
+                  onClick={() => removeFile(i)}
+                  className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-destructive text-white"
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 border-t border-border/70 px-4 py-3">
+          <input ref={fileInputRef} type="file" accept="image/*" multiple hidden onChange={pickFiles} />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="grid size-10 shrink-0 place-items-center rounded-full hover:bg-muted"
+          >
+            <ImagePlus className="size-5 text-muted-foreground" />
+          </button>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Type a message..."
+            className="flex-1 rounded-full border border-border bg-background px-4 py-2.5 text-sm outline-none"
+          />
+          <Button size="icon" className="shrink-0 rounded-full" onClick={handleSend} disabled={sending}>
+            <Send className="size-4" />
+          </Button>
+        </div>
+      </div>
     </AppShell>
   );
 }

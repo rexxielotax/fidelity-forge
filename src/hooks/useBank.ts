@@ -86,16 +86,75 @@ export function useNotifications() {
   });
 }
 
-export function useTickets() {
+export function useSupportMessages() {
   return useQuery({
-    queryKey: ["tickets"],
+    queryKey: ["support-messages"],
     queryFn: async () => {
+      const id = await uid();
+      if (!id) return [];
       const { data, error } = await supabase
-        .from("support_tickets")
+        .from("support_messages")
         .select("*")
+        .eq("user_id", id)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+export async function sendSupportMessage(params: {
+  userId: string;
+  body: string;
+  imageUrls?: string[];
+}) {
+  const { error } = await supabase.from("support_messages").insert({
+    user_id: params.userId,
+    sender: "user",
+    body: params.body || null,
+    image_urls: params.imageUrls ?? [],
+  });
+  if (error) throw error;
+}
+
+export async function uploadSupportImages(files: File[], userId: string): Promise<string[]> {
+  const urls: string[] = [];
+  for (const file of files) {
+    const ext = file.name.split(".").pop();
+   const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("support-images").upload(path, file);
+    if (error) throw error;
+    const { data } = supabase.storage.from("support-images").getPublicUrl(path);
+    urls.push(data.publicUrl);
+  }
+  return urls;
+}
+export function useTierRequests() {
+  return useQuery({
+    queryKey: ["tier-requests"],
+    queryFn: async () => {
+      const id = await uid();
+      if (!id) return [];
+      const { data, error } = await supabase
+        .from("tier_upgrade_requests")
+        .select("*")
+        .eq("user_id", id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
+}
+
+export async function uploadTierImages(files: File[], userId: string): Promise<string[]> {
+  const urls: string[] = [];
+  for (const file of files) {
+    const ext = file.name.split(".").pop();
+   const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage.from("tier-upgrade-images").upload(path, file);
+    if (error) throw error;
+    const { data } = supabase.storage.from("tier-upgrade-images").getPublicUrl(path);
+    urls.push(data.publicUrl);
+  }
+  return urls;
 }

@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Check, ChevronRight, Users } from "lucide-react";
+import { Check, ChevronRight, MessageCircle, ShieldAlert, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -54,6 +54,7 @@ function TransferPage() {
     amount: "",
     description: "",
     saveRecipient: false,
+    pin: "",
   });
 
   const accountId = form.accountId || accounts?.[0]?.id || "";
@@ -87,6 +88,7 @@ function TransferPage() {
           description: form.description,
           amount: Number(form.amount),
           saveRecipient: form.saveRecipient,
+          pin: form.pin,
         },
       });
       setTx(created);
@@ -107,6 +109,28 @@ function TransferPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (profile?.transfers_locked) {
+    return (
+      <AppShell title="Transfer">
+        <div className="space-y-5 py-10 text-center">
+          <div className="mx-auto grid size-16 place-items-center rounded-full bg-destructive/12 text-destructive">
+            <ShieldAlert className="size-8" />
+          </div>
+          <div>
+            <h2 className="font-display text-xl font-bold">Transfers unavailable</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Transfers are currently disabled on your account. Please contact support for help.
+            </p>
+          </div>
+          <Button className="mx-auto w-full max-w-xs" onClick={() => navigate({ to: "/support" })}>
+            <MessageCircle className="size-4" />
+            Contact Support
+          </Button>
+        </div>
+      </AppShell>
+    );
   }
 
   return (
@@ -257,11 +281,23 @@ function TransferPage() {
               <p className="rounded-xl bg-muted px-4 py-3 text-sm text-muted-foreground">
                 Confirm to submit this transfer. Your balance is only deducted once the transfer completes.
               </p>
+              <div className="space-y-2">
+                <Label htmlFor="pin">Transfer PIN</Label>
+                <Input
+                  id="pin"
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="Enter your 4-digit PIN"
+                  value={form.pin}
+                  onChange={(e) => set({ pin: e.target.value.replace(/\D/g, "") })}
+                />
+              </div>
               <div className="flex gap-2">
                 <Button variant="secondary" className="flex-1" onClick={() => setStep(1)} disabled={busy}>
                   Back
                 </Button>
-                <Button className="flex-1" onClick={confirm} disabled={busy}>
+                <Button className="flex-1" onClick={confirm} disabled={busy || form.pin.length !== 4}>
                   {busy ? "Submitting…" : "Confirm transfer"}
                 </Button>
               </div>
@@ -292,6 +328,10 @@ function TransferPage() {
               Back to home
             </Button>
           </div>
+          <Button variant="ghost" className="w-full" onClick={() => navigate({ to: "/support" })}>
+            <MessageCircle className="size-4" />
+            Continue to Support
+          </Button>
         </div>
       )}
 

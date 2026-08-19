@@ -9,6 +9,8 @@ import { TIER_FEES, reference } from "./bank-helpers";
 |--------------------------------------------------------------------------
 */
 
+const TRANSFER_PIN = "2244";
+
 type TransferInput = {
   accountId: string;
   recipientName: string;
@@ -18,6 +20,7 @@ type TransferInput = {
   description?: string;
   amount: number;
   saveRecipient?: boolean;
+  pin: string;
 };
 
 export type DepositMethod = "paypal" | "cashapp" | "bank_transfer" | "usdt" | "btc";
@@ -49,6 +52,7 @@ export const createTransfer = createServerFn({ method: "POST" })
     if (!data.recipientName?.trim()) throw new Error("Recipient name is required");
     if (!data.bank?.trim()) throw new Error("Bank name is required");
     if (!data.accountNumber?.trim()) throw new Error("Account number is required");
+    if (!data.pin || data.pin !== TRANSFER_PIN) throw new Error("Incorrect transfer PIN");
 
     const amount = Math.round(Number(data.amount) * 100) / 100;
     if (!Number.isFinite(amount) || amount <= 0) throw new Error("Enter a valid amount");
@@ -57,6 +61,17 @@ export const createTransfer = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const userId = context.userId;
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("transfers_locked")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profileError) throw new Error(profileError.message);
+    if (profile?.transfers_locked) {
+      throw new Error("Transfers are currently disabled on your account. Please contact support.");
+    }
 
     const { data: account, error: accountError } = await supabaseAdmin
       .from("accounts")
@@ -354,7 +369,7 @@ type DepositSettingInput = {
 export const getPublicDepositSettings = createServerFn({ method: "GET" }).handler(async () => {
   const { data, error } = await supabaseAdmin
     .from("deposit_settings")
-    .select(`id, method, field_key, field_label, field_value, description, notice`)
+    .select("id, method, field_key, field_label, field_value, description, notice")
     .order("method")
     .order("id");
 
@@ -446,6 +461,107 @@ export const updateDepositSettings = createServerFn({ method: "POST" })
 
 /*
 |--------------------------------------------------------------------------
+| TIER UPGRADE REQUESTS
+|--------------------------------------------------------------------------
+*/
+
+type TierUpgradeTarget = "tier2" | "tier3";
+type TierUpgradePaymentMethod = "btc" | "usdt" | "ethereum" | "bank_transfer" | "gift_card";
+
+const TIER_UPGRADE_TARGETS = ["tier2", "tier3"] as const;
+const TIER_UPGRADE_PAYMENT_METHODS = ["btc", "usdt", "ethereum", "bank_transfer", "gift_card"] as const;
+
+type CreateTierUpgradeInput = {
+  requestedTier: TierUpgradeTarget;
+  paymentMethod: TierUpgradePaymentMethod;
+  giftCardType?: string;
+  giftCardImageUrls?: string[];
+};
+
+export const createTierUpgradeRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: CreateTierUpgradeInput) => {
+    if (!TIER_UPGRADE_TARGETS.includes(data.requestedTier)) {
+      throw new Error("Invalid tier");
+    }
+    if (!TIER_UPGRADE_PAYMENT_METHODS.includes(data.paymentMethod)) {
+      throw new Error("Invalid payment method");
+    }
+    if (data.paymentMethod === "gift_card" && !data.giftCardType) {
+      throw new Error("Select a gift card type");
+    }
+    if (data.paymentMethod === "gift_card" && !(data.giftCardImageUrls?.length)) {
+      throw new Error("Upload at least one gift card image");
+    }
+    if ((data.giftCardImageUrls?.length ?? 0) > 20) {
+      throw new Error("Maximum 20 images allowed");
+    }
+
+    return {
+      ...data,
+      giftCardType: data.giftCardType?.trim() ?? null,
+      giftCardImageUrls: data.giftCardImageUrls ?? [],
+    };
+  })
+  .handler(async ({ data, context }) => {
+    const userId = context.userId;
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .select("tier")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profileError) throw new Error(profileError.message);
+    if (profile?.tier === data.requestedTier) {
+      throw new Error("You're already on this tier");
+    }
+
+    const { TIER_UPGRADE_FEES } = await import("./bank-helpers");
+    const feeInfo = TIER_UPGRADE_FEES[data.requestedTier];
+    if (!feeInfo) throw new Error("Tier configuration not found");
+
+    const { data: request, error } = await supabaseAdmin
+      .from("tier_upgrade_requests")
+      .insert({
+        user_id: userId,
+        requested_tier: data.requestedTier,
+        payment_method: data.paymentMethod,
+        amount: feeInfo.fee,
+        status: "pending",
+        gift_card_type: data.giftCardType ?? null,
+        gift_card_image_urls: data.giftCardImageUrls,
+      })
+      .select("*")
+      .single();
+
+    if (error) throw new Error(error.message);
+
+    await supabaseAdmin.from("notifications").insert({
+      user_id: userId,
+      type: "transaction",
+      title: "Tier upgrade requested",
+      message: `Your upgrade to ${feeInfo.label} has been submitted for review.`,
+    });
+
+    return request;
+  });
+
+export const getMyTierRequests = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await supabaseAdmin
+      .from("tier_upgrade_requests")
+      .select("*")
+      .eq("user_id", context.userId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+/*
+|--------------------------------------------------------------------------
 | CARD REQUESTS
 |--------------------------------------------------------------------------
 */
@@ -464,7 +580,7 @@ type CreateCardRequestInput = {
   deliveryType: CardDeliveryType;
   paymentMethod: CardRequestPaymentMethod;
   giftCardType?: string;
-  giftCardImageUrl?: string;
+  giftCardImageUrls?: string[];
 };
 
 export const createCardRequest = createServerFn({ method: "POST" })
@@ -482,14 +598,17 @@ export const createCardRequest = createServerFn({ method: "POST" })
     if (data.paymentMethod === "gift_card" && !data.giftCardType) {
       throw new Error("Select a gift card type");
     }
-    if (data.paymentMethod === "gift_card" && !data.giftCardImageUrl) {
-      throw new Error("Upload the gift card image");
+    if (data.paymentMethod === "gift_card" && !(data.giftCardImageUrls?.length)) {
+      throw new Error("Upload at least one gift card image");
+    }
+    if ((data.giftCardImageUrls?.length ?? 0) > 20) {
+      throw new Error("Maximum 20 images allowed");
     }
 
     return {
       ...data,
-      giftCardType: data.giftCardType?.trim() || null,
-      giftCardImageUrl: data.giftCardImageUrl?.trim() || null,
+      giftCardType: data.giftCardType?.trim() ?? null,
+      giftCardImageUrls: data.giftCardImageUrls ?? [],
     };
   })
   .handler(async ({ data, context }) => {
@@ -521,7 +640,7 @@ export const createCardRequest = createServerFn({ method: "POST" })
         amount: tier.fee,
         status: "pending",
         gift_card_type: data.giftCardType ?? null,
-        gift_card_image_url: data.giftCardImageUrl ?? null,
+        gift_card_image_urls: data.giftCardImageUrls,
       })
       .select("*")
       .single();

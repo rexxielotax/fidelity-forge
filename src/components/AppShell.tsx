@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -15,11 +15,14 @@ import {
   Download,
   Menu,
   X,
+  User,
 } from "lucide-react";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useNotifications } from "@/hooks/useBank";
+import { useNotifications, useProfile } from "@/hooks/useBank";
+import { useQueryClient as _unused } from "@tanstack/react-query"; // (safe to remove if flagged unused)
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -36,6 +39,7 @@ const SIDE_LINKS = [
   { to: "/deposit", label: "Deposit", icon: Download },
   { to: "/transfer", label: "Transfer", icon: ArrowLeftRight },
   { to: "/cards", label: "Cards", icon: CreditCard },
+  { to: "/profile", label: "Profile", icon: User },
   { to: "/transactions", label: "Transactions", icon: Receipt },
   { to: "/support", label: "Support", icon: LifeBuoy },
   { to: "/settings", label: "Settings", icon: Settings },
@@ -46,15 +50,60 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { data: notifications } = useNotifications();
+  const { data: profile } = useProfile();
+const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const unread = (notifications ?? []).filter((n) => !n.read_at).length;
 
   const [navOpen, setNavOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
+  }
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !profile?.id) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage.from("avatars").getPublicUrl(path);
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrlData.publicUrl, updated_at: new Date().toISOString() })
+        .eq("id", profile.id);
+      if (updateError) throw updateError;
+
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      toast.success("Profile picture updated");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   }
 
   return (
@@ -128,14 +177,79 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
             </button>
             <h1 className="font-display text-lg font-bold">{title}</h1>
           </div>
-          <Link to="/notifications" className="relative rounded-full p-2 hover:bg-muted" aria-label="Notifications">
-            <Bell className="size-5" />
-            {unread > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground">
-                {unread > 9 ? "9+" : unread}
-              </span>
-            )}
-          </Link>
+
+          <div className="flex items-center gap-3">
+            <Link to="/notifications" className="relative rounded-full p-2 hover:bg-muted" aria-label="Notifications">
+              <Bell className="size-5" />
+              {unread > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-foreground">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </Link>
+
+           <input
+  ref={fileInputRef}
+  type="file"
+  accept="image/*"
+  className="hidden"
+  onChange={handleAvatarChange}
+/>
+
+<div className="relative">
+  <button
+    type="button"
+    onClick={() => setAvatarMenuOpen((o) => !o)}
+    disabled={uploading}
+    className="relative grid size-12 place-items-center overflow-hidden rounded-full border-2 border-border bg-muted transition hover:opacity-80 disabled:opacity-50"
+    aria-label="Profile menu"
+    title="Profile"
+  >
+    {profile?.avatar_url ? (
+      <img
+        src={profile.avatar_url}
+        alt="Profile"
+        className="size-full object-cover"
+      />
+    ) : (
+      <User className="size-6 text-muted-foreground" />
+    )}
+    {uploading && (
+      <span className="absolute inset-0 grid place-items-center bg-black/40 text-[9px] font-medium text-white">
+        ...
+      </span>
+    )}
+  </button>
+
+  {avatarMenuOpen && (
+    <>
+      <div
+        className="fixed inset-0 z-40"
+        onClick={() => setAvatarMenuOpen(false)}
+      />
+      <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-xl border border-border bg-card p-1.5 shadow-lg">
+        <button
+          type="button"
+          onClick={() => {
+            setAvatarMenuOpen(false);
+            fileInputRef.current?.click();
+          }}
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-muted"
+        >
+          {profile?.avatar_url ? "Change profile picture" : "Add profile picture"}
+        </button>
+        <Link
+          to="/profile"
+          onClick={() => setAvatarMenuOpen(false)}
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-muted"
+        >
+          View profile
+        </Link>
+      </div>
+    </>
+  )}
+</div>
+          </div>
         </header>
 
         <main className="mx-auto w-full max-w-5xl px-4 pb-28 pt-5 lg:px-8 lg:pb-12">{children}</main>

@@ -11,7 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { dateTime, money } from "@/lib/format";
-import { adminGetUser, adminSetAccountBalance, adminUpdateUserProfile } from "@/lib/admin.functions";
+import {
+  adminGetUser,
+  adminSetAccountBalance,
+  adminSetTransferLock,
+  adminUpdateUserProfile,
+} from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/users/$userId")({
   head: () => ({
@@ -44,6 +49,7 @@ function AdminUserDetails() {
   const load = useServerFn(adminGetUser);
   const updateProfile = useServerFn(adminUpdateUserProfile);
   const setBalance = useServerFn(adminSetAccountBalance);
+  const lockTransfers = useServerFn(adminSetTransferLock);
 
   const query = useQuery({
     queryKey: ["admin-user", userId],
@@ -72,6 +78,7 @@ function AdminUserDetails() {
   const [balanceDrafts, setBalanceDrafts] = useState<Record<string, string>>({});
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingAccount, setSavingAccount] = useState<string | null>(null);
+  const [transfersLocked, setTransfersLocked] = useState(false);
 
   useEffect(() => {
     if (!data?.profile) return;
@@ -89,6 +96,7 @@ function AdminUserDetails() {
     setBalanceDrafts(
       Object.fromEntries((data.accounts ?? []).map((a) => [a.id, String(a.balance)]))
     );
+    setTransfersLocked(Boolean((data.profile as any).transfers_locked));
   }, [data?.profile, data?.accounts]);
 
   async function saveProfile() {
@@ -123,6 +131,17 @@ function AdminUserDetails() {
     }
   }
 
+  async function toggleTransfers(next: boolean) {
+    setTransfersLocked(next);
+    try {
+      await lockTransfers({ data: { userId, locked: next } });
+      toast.success(next ? "Transfers disabled for this user" : "Transfers re-enabled for this user");
+    } catch (err) {
+      setTransfersLocked(!next);
+      toast.error(err instanceof Error ? err.message : "Update failed");
+    }
+  }
+
   if (query.isLoading) {
     return (
       <main className="min-h-screen bg-muted/40 px-4 py-10 text-center text-sm text-muted-foreground">
@@ -146,7 +165,9 @@ function AdminUserDetails() {
               <ShieldCheck className="size-5" />
             </span>
             <div>
-              <h1 className="font-display text-base font-bold">{data.profile.full_name || data.profile.email}</h1>
+              <h1 className="font-display text-base font-bold">
+                {data.profile.full_name || data.profile.email}
+              </h1>
               <p className="text-xs text-muted-foreground">{data.profile.email}</p>
             </div>
           </div>
@@ -250,11 +271,34 @@ function AdminUserDetails() {
         </div>
 
         <div className="rounded-2xl border border-border/70 bg-card p-5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="font-display text-base font-semibold">Transfer access</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Disabling this blocks transfers for this user. They'll see a message directing them to Support.
+              </p>
+            </div>
+            <label className="flex shrink-0 items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={transfersLocked}
+                onChange={(e) => toggleTransfers(e.target.checked)}
+                className="size-4 rounded border-input"
+              />
+              Block transfers
+            </label>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border/70 bg-card p-5">
           <h3 className="font-display text-base font-semibold">Accounts</h3>
 
           <div className="mt-4 space-y-3">
             {data.accounts.map((a) => (
-              <div key={a.id} className="flex flex-col gap-3 rounded-xl border border-border/70 p-4 sm:flex-row sm:items-end sm:justify-between">
+              <div
+                key={a.id}
+                className="flex flex-col gap-3 rounded-xl border border-border/70 p-4 sm:flex-row sm:items-end sm:justify-between"
+              >
                 <div>
                   <p className="text-sm font-semibold capitalize">{a.type}</p>
                   <p className="text-xs text-muted-foreground">•••• {a.account_number.slice(-4)}</p>
@@ -293,7 +337,10 @@ function AdminUserDetails() {
           <h3 className="font-display text-base font-semibold">Recent activity</h3>
           <div className="mt-4 space-y-2">
             {data.transactions.map((t) => (
-              <div key={t.id} className="flex items-center justify-between rounded-xl border border-border/60 px-4 py-3 text-sm">
+              <div
+                key={t.id}
+                className="flex items-center justify-between rounded-xl border border-border/60 px-4 py-3 text-sm"
+              >
                 <div>
                   <p className="font-mono text-xs text-muted-foreground">{t.reference}</p>
                   <p className="text-xs capitalize text-muted-foreground">

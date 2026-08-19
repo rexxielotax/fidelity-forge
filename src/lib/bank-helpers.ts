@@ -52,3 +52,8 @@ export function adminSessionConfig() {
     maxAge: 60 * 60 * 8,
   };
 }
+
+export const TIER_UPGRADE_FEES: Record<"tier2" | "tier3", { fee: number; label: string; perks: string }> = {
+  tier2: { fee: 5000, label: "Tier 2", perks: "Higher transfer limits and priority support." },
+  tier3: { fee: 10000, label: "Tier 3", perks: "Highest transfer limits, dedicated support, and premium perks." },
+};
