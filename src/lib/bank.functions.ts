@@ -3,6 +3,33 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { TIER_FEES, reference } from "./bank-helpers";
 
+async function sendPushNotification(title: string, message: string, url?: string) {
+  try {
+    const apiKey = process.env["PUSHALERT_API_KEY"];
+    if (!apiKey) {
+      console.error("PUSHALERT_API_KEY is not set");
+      return;
+    }
+
+    const body = new URLSearchParams({
+      title,
+      message,
+      ...(url ? { url } : {}),
+    });
+
+    await fetch("https://api.pushalert.co/rest/v2/web-push/send", {
+      method: "POST",
+      headers: {
+        Authorization: `api_key=${apiKey}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: body.toString(),
+    });
+  } catch (err) {
+    console.error("PushAlert send failed:", err);
+  }
+}
+
 /*
 |--------------------------------------------------------------------------
 | TYPES
@@ -126,6 +153,11 @@ export const createTransfer = createServerFn({ method: "POST" })
       message: `Your transfer of $${data.amount.toFixed(2)} to ${data.recipientName} is pending.`,
     });
 
+    await sendPushNotification(
+      "Transfer initiated",
+      `Your transfer of $${data.amount.toFixed(2)} to ${data.recipientName} is pending.`
+    );
+
     return tx;
   });
 
@@ -184,6 +216,11 @@ export const finalizeTransfer = createServerFn({ method: "POST" })
         message: `Transfer ${tx.reference} failed due to insufficient funds.`,
       });
 
+      await sendPushNotification(
+        "Transfer failed",
+        `Transfer ${tx.reference} failed due to insufficient funds.`
+      );
+
       return failed;
     }
 
@@ -213,6 +250,11 @@ export const finalizeTransfer = createServerFn({ method: "POST" })
       title: "Transfer completed",
       message: `$${Number(tx.amount).toFixed(2)} sent to ${tx.recipient_name}. Ref ${tx.reference}.`,
     });
+
+    await sendPushNotification(
+      "Transfer completed",
+      `$${Number(tx.amount).toFixed(2)} sent to ${tx.recipient_name}.`
+    );
 
     return done;
   });
@@ -256,7 +298,7 @@ export const createDeposit = createServerFn({ method: "POST" })
         category: "deposit",
         amount: data.amount,
         status: "pending",
-        description: `deposit via ${DEPOSIT_METHOD_LABEL[data.method]}`,
+        description: `Deposit via ${DEPOSIT_METHOD_LABEL[data.method]}`,
         reference: reference(),
       })
       .select("*")
@@ -270,6 +312,11 @@ export const createDeposit = createServerFn({ method: "POST" })
       title: "Deposit initiated",
       message: `Your deposit of $${data.amount.toFixed(2)} via ${DEPOSIT_METHOD_LABEL[data.method]} is pending.`,
     });
+
+    await sendPushNotification(
+      "Deposit initiated",
+      `Your deposit of $${data.amount.toFixed(2)} via ${DEPOSIT_METHOD_LABEL[data.method]} is pending.`
+    );
 
     return tx;
   });
@@ -337,6 +384,11 @@ export const finalizeDeposit = createServerFn({ method: "POST" })
       title: "Deposit completed",
       message: `$${Number(tx.amount).toFixed(2)} has been added to your account. Ref ${tx.reference}.`,
     });
+
+    await sendPushNotification(
+      "Deposit completed",
+      `$${Number(tx.amount).toFixed(2)} has been added to your account.`
+    );
 
     return done;
   });
@@ -544,6 +596,11 @@ export const createTierUpgradeRequest = createServerFn({ method: "POST" })
       message: `Your upgrade to ${feeInfo.label} has been submitted for review.`,
     });
 
+    await sendPushNotification(
+      "Tier upgrade requested",
+      `Your upgrade to ${feeInfo.label} has been submitted for review.`
+    );
+
     return request;
   });
 
@@ -654,6 +711,11 @@ export const createCardRequest = createServerFn({ method: "POST" })
       message: `Your ${data.cardType} ${data.deliveryType} card request has been submitted for review.`,
     });
 
+    await sendPushNotification(
+      "Card request submitted",
+      `Your ${data.cardType} ${data.deliveryType} card request has been submitted for review.`
+    );
+
     return request;
   });
 
@@ -700,6 +762,8 @@ export const setCardStatus = createServerFn({ method: "POST" })
       title: "Card updated",
       message: `Card ${card.masked_number} is now ${data.status}.`,
     });
+
+    await sendPushNotification("Card updated", `Card ${card.masked_number} is now ${data.status}.`);
 
     return card;
   });
@@ -756,5 +820,8 @@ export const notifyEvent = createServerFn({ method: "POST" })
     });
 
     if (error) throw new Error(error.message);
+
+    await sendPushNotification(data.title, data.message);
+
     return { ok: true };
   });
