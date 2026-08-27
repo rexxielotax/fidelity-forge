@@ -68,6 +68,62 @@ export type Database = {
         }
         Relationships: []
       }
+      card_requests: {
+        Row: {
+          account_id: string | null
+          admin_note: string | null
+          amount: number
+          card_type: string
+          created_at: string
+          delivery_type: string
+          gift_card_image_urls: string[]
+          gift_card_type: string | null
+          id: string
+          payment_method: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          admin_note?: string | null
+          amount?: number
+          card_type: string
+          created_at?: string
+          delivery_type: string
+          gift_card_image_urls?: string[]
+          gift_card_type?: string | null
+          id?: string
+          payment_method: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          admin_note?: string | null
+          amount?: number
+          card_type?: string
+          created_at?: string
+          delivery_type?: string
+          gift_card_image_urls?: string[]
+          gift_card_type?: string | null
+          id?: string
+          payment_method?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_requests_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_secrets: {
         Row: {
           card_id: string
@@ -147,10 +203,48 @@ export type Database = {
           },
         ]
       }
+      deposit_settings: {
+        Row: {
+          created_at: string
+          description: string
+          field_key: string
+          field_label: string
+          field_value: string
+          id: string
+          method: string
+          notice: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          field_key: string
+          field_label: string
+          field_value?: string
+          id?: string
+          method: string
+          notice?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          field_key?: string
+          field_label?: string
+          field_value?: string
+          id?: string
+          method?: string
+          notice?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
+          event_key: string | null
           id: string
+          link: string | null
           message: string
           read_at: string | null
           title: string
@@ -159,7 +253,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          event_key?: string | null
           id?: string
+          link?: string | null
           message: string
           read_at?: string | null
           title: string
@@ -168,7 +264,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          event_key?: string | null
           id?: string
+          link?: string | null
           message?: string
           read_at?: string | null
           title?: string
@@ -180,6 +278,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          avatar_url: string | null
           city: string | null
           country: string | null
           created_at: string
@@ -191,10 +290,13 @@ export type Database = {
           notify_email: boolean
           notify_push: boolean
           phone: string | null
+          tier: string
+          transfers_locked: boolean
           updated_at: string
         }
         Insert: {
           address?: string | null
+          avatar_url?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -206,10 +308,13 @@ export type Database = {
           notify_email?: boolean
           notify_push?: boolean
           phone?: string | null
+          tier?: string
+          transfers_locked?: boolean
           updated_at?: string
         }
         Update: {
           address?: string | null
+          avatar_url?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
@@ -221,6 +326,8 @@ export type Database = {
           notify_email?: boolean
           notify_push?: boolean
           phone?: string | null
+          tier?: string
+          transfers_locked?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -251,6 +358,39 @@ export type Database = {
           id?: string
           name?: string
           routing_number?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          image_urls: string[]
+          read_by_admin: boolean
+          read_by_user: boolean
+          sender: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          image_urls?: string[]
+          read_by_admin?: boolean
+          read_by_user?: boolean
+          sender?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          image_urls?: string[]
+          read_by_admin?: boolean
+          read_by_user?: boolean
+          sender?: string
           user_id?: string
         }
         Relationships: []
@@ -286,6 +426,48 @@ export type Database = {
           message?: string
           status?: string
           subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tier_upgrade_requests: {
+        Row: {
+          admin_note: string | null
+          amount: number
+          created_at: string
+          gift_card_image_urls: string[]
+          gift_card_type: string | null
+          id: string
+          payment_method: string
+          requested_tier: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          gift_card_image_urls?: string[]
+          gift_card_type?: string | null
+          id?: string
+          payment_method: string
+          requested_tier: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          gift_card_image_urls?: string[]
+          gift_card_type?: string | null
+          id?: string
+          payment_method?: string
+          requested_tier?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
