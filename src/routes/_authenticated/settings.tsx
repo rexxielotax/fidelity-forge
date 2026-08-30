@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { LogOut } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProfile } from "@/hooks/useBank";
+import { CURRENCY_OPTIONS } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -24,14 +25,6 @@ export const Route = createFileRoute("/_authenticated/settings")({
   }),
   component: SettingsPage,
 });
-
-const CURRENCIES = [
-  "USD", "EUR", "GBP", "NGN", "CAD",
-  // Asia
-  "JPY", "CNY", "INR", "KRW", "SGD", "HKD", "MYR", "THB", "IDR", "PHP", "VND", "PKR",
-  // Middle East / Dubai
-  "AED", "SAR", "QAR",
-];
 
 function SettingsPage() {
   const navigate = useNavigate();
@@ -152,9 +145,9 @@ function SettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CURRENCIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
+                  {CURRENCY_OPTIONS.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.code} — {c.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -183,7 +176,13 @@ function SettingsPage() {
 
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button type="submit" className="flex-1" disabled={saving}>
-            {saving ? "Saving…" : "Save changes"}
+            {saving ? (
+              <>
+                <Loader2 className="size-4 animate-spin" /> Saving…
+              </>
+            ) : (
+              "Save changes"
+            )}
           </Button>
           <Button type="button" variant="ghost" className="text-destructive" onClick={signOut}>
             <LogOut className="size-4" /> Sign out

@@ -29,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 const QUICK = [
+  { to: "/deposit", label: "Deposit", icon: Download },
   { to: "/transfer", label: "Transfer", icon: ArrowLeftRight },
   { to: "/cards", label: "My Cards", icon: CreditCard },
   { to: "/transactions", label: "Transactions", icon: Receipt },
@@ -46,38 +47,6 @@ function Dashboard() {
   const currency = profile?.currency ?? "USD";
   const total = (accounts ?? []).reduce((sum, a) => sum + Number(a.balance), 0);
   const firstName = (profile?.full_name || profile?.email || "there").split(" ")[0];
-const QUICK = [
-  {
-    to: "/deposit",
-    label: "Deposit",
-    icon: Download,
-  },
-  {
-    to: "/transfer",
-    label: "Transfer",
-    icon: ArrowLeftRight,
-  },
-  {
-    to: "/cards",
-    label: "My Cards",
-    icon: CreditCard,
-  },
-  {
-    to: "/transactions",
-    label: "Transactions",
-    icon: Receipt,
-  },
-  {
-    to: "/support",
-    label: "Support",
-    icon: LifeBuoy,
-  },
-  {
-    to: "/more",
-    label: "More",
-    icon: MoreHorizontal,
-  },
-] as const;
 
   return (
     <AppShell title="Home">
@@ -91,7 +60,7 @@ const QUICK = [
             {hidden ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
-        <p className="mt-2 font-display text-1=3xl font-extrabold">
+        <p className="mt-2 font-display text-3xl font-extrabold">
           {hidden ? "••••••" : money(total, currency)}
         </p>
         <p className="mt-1 text-sm text-primary-foreground/75">
