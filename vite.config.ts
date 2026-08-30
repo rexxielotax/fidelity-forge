@@ -15,7 +15,6 @@ export default defineConfig({
   externals: {
     inline: ["tslib"],
   },
-  // @ts-expect-error - rolldownConfig is a valid Nitro option but missing from this wrapper's types
   rolldownConfig: {
     experimental: {
       chunkOptimization: false,
