@@ -223,14 +223,14 @@ function CardsPage() {
 
       await request({
         data: {
-          accountId: selectedAccount || undefined,
+          ...(selectedAccount ? { accountId: selectedAccount } : {}),
           cardType: tier,
           deliveryType: delivery,
           paymentMethod: payment,
-          giftCardType: payment === "gift_card" ? giftCardType : undefined,
-          giftCardImageUrls: payment === "gift_card" ? giftCardImageUrls : undefined,
+          ...(payment === "gift_card" ? { giftCardType, giftCardImageUrls } : {}),
         },
       });
+
 
       await queryClient.invalidateQueries({ queryKey: ["my-card-requests"] });
       setStep(5);
