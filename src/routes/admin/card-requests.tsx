@@ -21,7 +21,7 @@ import {
 export const Route = createFileRoute("/admin/card-requests")({
   head: () => ({
     meta: [
-      { title: "Card Requests — Nirmal Bank Admin" },
+      { title: "Card Requests — wellsfargo Bank Admin" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -94,7 +94,7 @@ function AdminCardRequests() {
           </span>
           <div>
             <h1 className="font-display font-bold">Card Requests</h1>
-            <p className="text-xs text-muted-foreground">Nirmal Bank Admin</p>
+            <p className="text-xs text-muted-foreground">wellsfargo Bank Admin</p>
           </div>
         </div>
       </header>

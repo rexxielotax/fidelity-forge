@@ -18,7 +18,7 @@ import {
 export const Route = createFileRoute("/admin/deposit-settings")({
   head: () => ({
     meta: [
-      { title: "Deposit settings — Nirmal Bank Admin" },
+      { title: "Deposit settings — wellsfargo Bank Admin" },
       { name: "robots", content: "noindex" },
     ],
   }),

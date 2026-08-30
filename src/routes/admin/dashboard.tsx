@@ -42,7 +42,7 @@ import { AdminSupportPanel } from "@/components/Adminsupportpanel";
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({
     meta: [
-      { title: "Admin Console — Nirmal Bank" },
+      { title: "Admin Console — wellsfargo Bank" },
       {
         name: "description",
         content: "Manage live users, balances, transactions and support tickets.",
@@ -251,7 +251,7 @@ function AdminDashboard() {
               </span>
               <div>
                 <h1 className="font-display text-base font-bold">Admin Console</h1>
-                <p className="text-xs text-muted-foreground">Nirmal Bank</p>
+                <p className="text-xs text-muted-foreground">wellsfargo Bank</p>
               </div>
             </div>
 
@@ -315,7 +315,7 @@ function AdminDashboard() {
             </span>
             <div>
               <h1 className="font-display text-base font-bold">Admin Console</h1>
-              <p className="text-xs text-muted-foreground">Nirmal Bank</p>
+              <p className="text-xs text-muted-foreground">wellsfargo Bank</p>
             </div>
           </div>
 

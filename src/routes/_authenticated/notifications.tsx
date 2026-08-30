@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({
     meta: [
-      { title: "Notifications — Nirmal Bank" },
-      { name: "description", content: "Transaction, security and system alerts for your Nirmal Bank account." },
-      { property: "og:title", content: "Notifications — Nirmal Bank" },
+      { title: "Notifications — wellsfargo Bank" },
+      { name: "description", content: "Transaction, security and system alerts for your wellsfargo Bank account." },
+      { property: "og:title", content: "Notifications — wellsfargo Bank" },
       { property: "og:description", content: "Transaction, security and system alerts." },
     ],
   }),

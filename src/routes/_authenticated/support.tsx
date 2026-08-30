@@ -13,8 +13,8 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/support")({
   head: () => ({
     meta: [
-      { title: "Support — rexxie" },
-      { name: "description", content: "Chat with the rexxie support team." },
+      { title: "Support — wellsfargo" },
+      { name: "description", content: "Chat with the wellsfargo support team." },
     ],
   }),
   component: SupportPage,
