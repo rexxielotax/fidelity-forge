@@ -10,10 +10,10 @@ import { adminLogin } from "@/lib/admin.functions";
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
     meta: [
-      { title: "Admin sign in — rexxie Bank" },
-      { name: "description", content: "Restricted administrator access for the rexxie Bank simulation." },
+      { title: "Admin sign in — wellsfargo Bank" },
+      { name: "description", content: "Restricted administrator access for the wellsfargo Bank simulation." },
       { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Admin sign in — rexxie Bank" },
+      { property: "og:title", content: "Admin sign in — wellsfargo Bank" },
       { property: "og:description", content: "Restricted administrator access." },
     ],
   }),
@@ -51,7 +51,7 @@ function AdminLogin() {
           </span>
           <div>
             <h1 className="font-display text-lg font-bold">Admin console</h1>
-            <p className="text-xs text-muted-foreground">rexxie Bank · Restricted access</p>
+            <p className="text-xs text-muted-foreground">wellsfargo Bank · Restricted access</p>
           </div>
         </div>
 
