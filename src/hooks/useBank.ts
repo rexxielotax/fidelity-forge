@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 async function uid() {
@@ -84,6 +85,49 @@ export function useNotifications() {
     },
     refetchInterval: 20000,
   });
+}
+
+export function useNotificationsRealtime() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    supabase.auth.getUser().then(({ data }) => {
+      const userId = data.user?.id;
+      if (!userId || cancelled) return;
+
+      channel = supabase
+        .channel(`notifications:${userId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            const incoming = payload.new as Record<string, unknown>;
+            queryClient.setQueryData<Record<string, unknown>[]>(
+              ["notifications"],
+              (old) => {
+                const list = old ?? [];
+                if (list.some((n) => n["id"] === incoming["id"])) return list;
+                return [incoming, ...list];
+              },
+            );
+          },
+        )
+        .subscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 }
 
 export function useSupportMessages() {

@@ -21,7 +21,7 @@ import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useNotifications, useProfile } from "@/hooks/useBank";
+import { useNotifications, useNotificationsRealtime, useProfile } from "@/hooks/useBank";
 import { useQueryClient as _unused } from "@tanstack/react-query"; // (safe to remove if flagged unused)
 import { cn } from "@/lib/utils";
 
@@ -49,6 +49,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useNotificationsRealtime();
   const { data: notifications } = useNotifications();
   const { data: profile } = useProfile();
 const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
