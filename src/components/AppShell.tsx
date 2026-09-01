@@ -49,6 +49,7 @@ export function AppShell({ title, children }: { title: string; children: ReactNo
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useNotificationsRealtime();
   const { data: notifications } = useNotifications();
   const { data: profile } = useProfile();
 const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
