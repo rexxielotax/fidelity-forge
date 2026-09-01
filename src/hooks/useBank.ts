@@ -114,7 +114,7 @@ export function useNotificationsRealtime() {
               ["notifications"],
               (old) => {
                 const list = old ?? [];
-                if (list.some((n) => n.id === incoming.id)) return list;
+                if (list.some((n) => n["id"] === incoming["id"])) return list;
                 return [incoming, ...list];
               },
             );
