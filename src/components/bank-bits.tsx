@@ -25,6 +25,7 @@ export type Tx = {
 
 const STATUS_STYLES: Record<string, string> = {
   completed: "bg-success/12 text-success",
+  processing: "bg-primary/12 text-primary",
   pending: "bg-warning/18 text-warning-foreground",
   failed: "bg-destructive/12 text-destructive",
   cancelled: "bg-muted text-muted-foreground",
