@@ -61,6 +61,20 @@ export function money(amount: number | string, currency = "USD") {
   }
 }
 
+export function currencySymbol(currency = "USD") {
+  try {
+    const parts = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      currencyDisplay: "narrowSymbol",
+    }).formatToParts(0);
+    const part = parts.find((p) => p.type === "currency");
+    return part?.value || currency;
+  } catch {
+    return currency;
+  }
+}
+
 export function dateTime(value: string | null | undefined) {
   if (!value) return "—";
   return new Date(value).toLocaleString("en-US", {
