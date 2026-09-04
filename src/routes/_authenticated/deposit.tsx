@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { useAccounts, useProfile } from "@/hooks/useBank";
-import { money } from "@/lib/format";
+import { money, currencySymbol } from "@/lib/format";
 
 import { downloadReceipt } from "@/lib/receipt";
 
