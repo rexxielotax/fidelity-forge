@@ -372,8 +372,18 @@ function TransferPage() {
                 <Button variant="secondary" className="flex-1" onClick={() => setStep(1)} disabled={busy}>
                   Back
                 </Button>
-                <Button className="flex-1" onClick={confirm} disabled={busy || form.pin.length !== 4}>
-                  {busy ? "Submitting…" : "Confirm transfer"}
+                <Button
+                  className="flex-1"
+                  onClick={confirm}
+                  disabled={busy || submitting.current || form.pin.length !== 4}
+                >
+                  {busy ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> Processing…
+                    </>
+                  ) : (
+                    "Confirm transfer"
+                  )}
                 </Button>
               </div>
             </div>
