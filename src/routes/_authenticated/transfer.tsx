@@ -325,20 +325,23 @@ function TransferPage() {
 
       {step === 3 && tx && (
         <div className="space-y-5 text-center">
-          <div className="mx-auto grid size-16 place-items-center rounded-full bg-success/12 text-success">
-            <Check className="size-8" />
+          <div className={`mx-auto grid size-16 place-items-center rounded-full ${outcome.tone}`}>
+            <outcome.Icon className={`size-8 ${outcome.spin ? "animate-spin" : ""}`} />
           </div>
           <div>
-            <h2 className="font-display text-xl font-bold">Transfer submitted</h2>
+            <h2 className="font-display text-xl font-bold">{outcome.title}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Reference {tx.reference} · <StatusBadge status={tx.status} />
             </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Pending transfers settle automatically after a short processing window.
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">{settleError ?? outcome.hint}</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button variant="secondary" className="flex-1" onClick={() => downloadReceipt(tx, currency)}>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              disabled={busy}
+              onClick={() => downloadReceipt(tx, currency)}
+            >
               Download receipt
             </Button>
             <Button className="flex-1" onClick={() => navigate({ to: "/dashboard" })}>
