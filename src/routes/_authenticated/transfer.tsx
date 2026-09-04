@@ -54,6 +54,8 @@ function TransferPage() {
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const [tx, setTx] = useState<Awaited<ReturnType<typeof createTransfer>> | null>(null);
+  const [settleError, setSettleError] = useState<string | null>(null);
+  const submitting = useRef(false);
   const [form, setForm] = useState({
     accountId: "",
     recipientName: "",
