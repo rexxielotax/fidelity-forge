@@ -1,8 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
-import { Check, ChevronRight, MessageCircle, ShieldAlert, Users } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Check,
+  ChevronRight,
+  Loader2,
+  MessageCircle,
+  ShieldAlert,
+  Users,
+  XCircle,
+  Ban,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
@@ -17,6 +26,7 @@ import { useAccounts, useProfile, useRecipients } from "@/hooks/useBank";
 import { money } from "@/lib/format";
 import { createTransfer, finalizeTransfer } from "@/lib/bank.functions";
 import { downloadReceipt } from "@/lib/receipt";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/transfer")({
   head: () => ({
@@ -45,6 +55,8 @@ function TransferPage() {
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const [tx, setTx] = useState<Awaited<ReturnType<typeof createTransfer>> | null>(null);
+  const [settleError, setSettleError] = useState<string | null>(null);
+  const submitting = useRef(false);
   const [form, setForm] = useState({
     accountId: "",
     recipientName: "",
@@ -61,6 +73,63 @@ function TransferPage() {
   const account = (accounts ?? []).find((a) => a.id === accountId);
   const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
 
+  // Track the real transaction row: if an admin or the backend changes its
+  // status later, the completion screen follows the database, not a timer.
+  const txId = tx?.id ?? null;
+  useEffect(() => {
+    if (!txId) return;
+    const channel = supabase
+      .channel(`transfer:${txId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "transactions", filter: `id=eq.${txId}` },
+        (payload) => {
+          setTx((prev) => (prev ? { ...prev, ...(payload.new as typeof prev) } : prev));
+          queryClient.invalidateQueries();
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [txId, queryClient]);
+
+  const status = tx?.status ?? "pending";
+  const outcome =
+    status === "completed"
+      ? {
+          Icon: Check,
+          spin: false,
+          tone: "bg-success/12 text-success",
+          title: "Transfer completed",
+          hint: "The funds have been sent and your balance is updated.",
+        }
+      : status === "failed"
+        ? {
+            Icon: XCircle,
+            spin: false,
+            tone: "bg-destructive/12 text-destructive",
+            title: "Transfer failed",
+            hint: "This transfer could not be completed. No funds were deducted.",
+          }
+        : status === "cancelled"
+          ? {
+              Icon: Ban,
+              spin: false,
+              tone: "bg-muted text-muted-foreground",
+              title: "Transfer cancelled",
+              hint: "This transfer was cancelled and no funds were deducted.",
+            }
+          : {
+              Icon: Loader2,
+              spin: busy,
+              tone: "bg-primary/12 text-primary",
+              title: busy ? "Processing transfer" : "Transfer pending review",
+              hint: busy
+                ? "We are settling this transfer with your account now."
+                : "This transfer is awaiting settlement. Its status updates here automatically.",
+            };
+
   function goReview(e: React.FormEvent) {
     e.preventDefault();
     const amount = Number(form.amount);
@@ -76,7 +145,10 @@ function TransferPage() {
   }
 
   async function confirm() {
+    if (submitting.current) return;
+    submitting.current = true;
     setBusy(true);
+    setSettleError(null);
     try {
       const created = await send({
         data: {
@@ -95,17 +167,20 @@ function TransferPage() {
       setStep(3);
       queryClient.invalidateQueries();
 
-      setTimeout(async () => {
-        try {
-          const done = await finalize({ data: { transactionId: created.id } });
-          setTx(done ?? created);
-          queryClient.invalidateQueries();
-        } catch {
-          /* status stays pending; admin can resolve */
-        }
-      }, 6000);
+      // Settle against the real backend record — no blind timers.
+      try {
+        const done = await finalize({ data: { transactionId: created.id } });
+        if (done) setTx(done);
+      } catch (err) {
+        setSettleError(
+          err instanceof Error ? err.message : "We could not settle this transfer automatically.",
+        );
+      } finally {
+        queryClient.invalidateQueries();
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Transfer failed, please try again");
+      submitting.current = false;
     } finally {
       setBusy(false);
     }
@@ -297,8 +372,18 @@ function TransferPage() {
                 <Button variant="secondary" className="flex-1" onClick={() => setStep(1)} disabled={busy}>
                   Back
                 </Button>
-                <Button className="flex-1" onClick={confirm} disabled={busy || form.pin.length !== 4}>
-                  {busy ? "Submitting…" : "Confirm transfer"}
+                <Button
+                  className="flex-1"
+                  onClick={confirm}
+                  disabled={busy || submitting.current || form.pin.length !== 4}
+                >
+                  {busy ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> Processing…
+                    </>
+                  ) : (
+                    "Confirm transfer"
+                  )}
                 </Button>
               </div>
             </div>
@@ -308,20 +393,23 @@ function TransferPage() {
 
       {step === 3 && tx && (
         <div className="space-y-5 text-center">
-          <div className="mx-auto grid size-16 place-items-center rounded-full bg-success/12 text-success">
-            <Check className="size-8" />
+          <div className={`mx-auto grid size-16 place-items-center rounded-full ${outcome.tone}`}>
+            <outcome.Icon className={`size-8 ${outcome.spin ? "animate-spin" : ""}`} />
           </div>
           <div>
-            <h2 className="font-display text-xl font-bold">Transfer submitted</h2>
+            <h2 className="font-display text-xl font-bold">{outcome.title}</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Reference {tx.reference} · <StatusBadge status={tx.status} />
             </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Pending transfers settle automatically after a short processing window.
-            </p>
+            <p className="mt-2 text-xs text-muted-foreground">{settleError ?? outcome.hint}</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button variant="secondary" className="flex-1" onClick={() => downloadReceipt(tx, currency)}>
+            <Button
+              variant="secondary"
+              className="flex-1"
+              disabled={busy}
+              onClick={() => downloadReceipt(tx, currency)}
+            >
               Download receipt
             </Button>
             <Button className="flex-1" onClick={() => navigate({ to: "/dashboard" })}>
