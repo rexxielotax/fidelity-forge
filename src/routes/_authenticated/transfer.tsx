@@ -26,6 +26,7 @@ import { useAccounts, useProfile, useRecipients } from "@/hooks/useBank";
 import { money } from "@/lib/format";
 import { createTransfer, finalizeTransfer } from "@/lib/bank.functions";
 import { downloadReceipt } from "@/lib/receipt";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/transfer")({
   head: () => ({
