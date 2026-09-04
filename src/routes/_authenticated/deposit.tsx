@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { useAccounts, useProfile } from "@/hooks/useBank";
-import { money } from "@/lib/format";
+import { money, currencySymbol } from "@/lib/format";
 
 import { downloadReceipt } from "@/lib/receipt";
 
@@ -359,14 +359,14 @@ function DepositPage() {
             <Label htmlFor="deposit-amount">Amount</Label>
             <div className="relative">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                $
+                {currencySymbol(currency)}
               </span>
               <Input
                 id="deposit-amount"
                 type="number"
                 step="0.01"
                 min="0.01"
-                className="pl-7"
+                className="pl-10"
                 value={form.amount}
                 onChange={(e) => set({ amount: e.target.value })}
                 required
