@@ -85,7 +85,10 @@ function TransferPage() {
   }
 
   async function confirm() {
+    if (submitting.current) return;
+    submitting.current = true;
     setBusy(true);
+    setSettleError(null);
     try {
       const created = await send({
         data: {
@@ -104,17 +107,20 @@ function TransferPage() {
       setStep(3);
       queryClient.invalidateQueries();
 
-      setTimeout(async () => {
-        try {
-          const done = await finalize({ data: { transactionId: created.id } });
-          setTx(done ?? created);
-          queryClient.invalidateQueries();
-        } catch {
-          /* status stays pending; admin can resolve */
-        }
-      }, 6000);
+      // Settle against the real backend record — no blind timers.
+      try {
+        const done = await finalize({ data: { transactionId: created.id } });
+        if (done) setTx(done);
+      } catch (err) {
+        setSettleError(
+          err instanceof Error ? err.message : "We could not settle this transfer automatically.",
+        );
+      } finally {
+        queryClient.invalidateQueries();
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Transfer failed, please try again");
+      submitting.current = false;
     } finally {
       setBusy(false);
     }
