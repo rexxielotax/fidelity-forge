@@ -72,6 +72,63 @@ function TransferPage() {
   const account = (accounts ?? []).find((a) => a.id === accountId);
   const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
 
+  // Track the real transaction row: if an admin or the backend changes its
+  // status later, the completion screen follows the database, not a timer.
+  const txId = tx?.id ?? null;
+  useEffect(() => {
+    if (!txId) return;
+    const channel = supabase
+      .channel(`transfer:${txId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "transactions", filter: `id=eq.${txId}` },
+        (payload) => {
+          setTx((prev) => (prev ? { ...prev, ...(payload.new as typeof prev) } : prev));
+          queryClient.invalidateQueries();
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [txId, queryClient]);
+
+  const status = tx?.status ?? "pending";
+  const outcome =
+    status === "completed"
+      ? {
+          Icon: Check,
+          spin: false,
+          tone: "bg-success/12 text-success",
+          title: "Transfer completed",
+          hint: "The funds have been sent and your balance is updated.",
+        }
+      : status === "failed"
+        ? {
+            Icon: XCircle,
+            spin: false,
+            tone: "bg-destructive/12 text-destructive",
+            title: "Transfer failed",
+            hint: "This transfer could not be completed. No funds were deducted.",
+          }
+        : status === "cancelled"
+          ? {
+              Icon: Ban,
+              spin: false,
+              tone: "bg-muted text-muted-foreground",
+              title: "Transfer cancelled",
+              hint: "This transfer was cancelled and no funds were deducted.",
+            }
+          : {
+              Icon: Loader2,
+              spin: busy,
+              tone: "bg-primary/12 text-primary",
+              title: busy ? "Processing transfer" : "Transfer pending review",
+              hint: busy
+                ? "We are settling this transfer with your account now."
+                : "This transfer is awaiting settlement. Its status updates here automatically.",
+            };
+
   function goReview(e: React.FormEvent) {
     e.preventDefault();
     const amount = Number(form.amount);
